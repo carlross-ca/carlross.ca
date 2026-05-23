@@ -45,20 +45,15 @@ This is a personal investing journal, not investment advice or an offer to manag
     url = "/commentary/"
     weight = 10
   [[menu.main]]
-    identifier = "archive"
-    name = "Archive"
-    url = "/archive/"
-    weight = 20
-  [[menu.main]]
     identifier = "about"
     name = "About"
     url = "/about/"
-    weight = 30
+    weight = 20
   [[menu.main]]
     identifier = "contact"
     name = "Contact"
     url = "/contact/"
-    weight = 40
+    weight = 30
 
 [outputs]
   home = ["HTML", "RSS"]
