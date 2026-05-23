@@ -26,34 +26,17 @@ pagination.pagerSize = 20
   assets.disableFingerprinting = false
   assets.disableHLJS = true
 
-  [params.homeInfoParams]
-    Title = "Carl Ross Investing Journal"
-    Content = """
-I document a personal portfolio using ETFs and options, with monthly notes on process, risk, mistakes, and results.
-
-This is a personal investing journal, not investment advice or an offer to manage money.
-"""
-
-[[params.socialIcons]]
-    name = "linkedin"
-    url = "https://www.linkedin.com/in/carlross-ca/"
-
 [menu]
-  [[menu.main]]
-    identifier = "commentary"
-    name = "Commentary"
-    url = "/commentary/"
-    weight = 10
   [[menu.main]]
     identifier = "about"
     name = "About"
     url = "/about/"
-    weight = 20
+    weight = 10
   [[menu.main]]
     identifier = "contact"
     name = "Contact"
     url = "/contact/"
-    weight = 30
+    weight = 20
 
 [outputs]
   home = ["HTML", "RSS"]

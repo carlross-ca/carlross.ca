@@ -36,33 +36,6 @@ body {
   font-size: 0.92rem;
 }
 
-/* Homepage intro - simple editorial signal, not a landing page */
-.home-info {
-  margin-top: 18px;
-  margin-bottom: 28px;
-  padding: 0 0 24px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.home-info .entry-header h1 {
-  max-width: 12ch;
-  font-size: clamp(2.35rem, 8vw, 4.8rem);
-  line-height: 0.98;
-  letter-spacing: 0;
-}
-
-.home-info .entry-content {
-  max-width: 620px;
-  margin-top: 18px;
-  color: var(--journal-ink-soft);
-  font-size: 1.06rem;
-  line-height: 1.65;
-}
-
-.dark .home-info .entry-content {
-  color: var(--secondary);
-}
-
 /* Body copy - serif for long-form commentary, system sans for UI */
 .post-content,
 .post-content p,
@@ -193,6 +166,7 @@ body {
 }
 
 /* Post list — compact */
+.first-entry,
 .post-entry {
   margin-bottom: 0.6em;
   padding: 1.1em 0;
@@ -202,11 +176,17 @@ body {
   border-radius: 0;
 }
 
+.first-entry {
+  margin-top: 20px;
+}
+
+.first-entry .entry-header h2,
 .post-entry .entry-header h2 {
   font-size: 1.36rem;
   line-height: 1.2;
 }
 
+.first-entry .entry-content,
 .post-entry .entry-content {
   color: var(--journal-ink-soft);
   font-size: 0.96rem;
@@ -222,11 +202,6 @@ body {
   color: var(--journal-accent);
 }
 
-/* Archive — tight spacing */
-.archive-entry {
-  margin: 0.4em 0;
-}
-
 /* Mobile tuning */
 @media (max-width: 640px) {
   .post-content,
@@ -239,10 +214,6 @@ body {
   .site-disclaimer {
     font-size: 0.75rem;
     padding: 1em 1em;
-  }
-
-  .home-info .entry-header h1 {
-    max-width: 10ch;
   }
 
   .post-content table {
