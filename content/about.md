@@ -2,35 +2,39 @@
 title: "About"
 date: 2026-05-01
 draft: false
-summary: "About the Volatility Income Composite: thesis, three-layer structure, and risk framework philosophy."
+summary: "About this personal investing journal."
 ---
 
-## The Composite
+## What this is
 
-The **Volatility Income Composite** is a single-portfolio, self-administered strategy run from Vernon, British Columbia. It pursues the systematic harvesting of the Equity Risk Premium and the Variance Risk Premium, with episodic overlays on volatility anomalies. The base currency is Canadian dollars. There are no external client assets; this is personal capital, documented publicly as a matter of discipline.
+This site is my personal investing journal. I document a personal portfolio using ETFs and options, with monthly notes on process, risk, mistakes, and results.
 
-## Thesis
+The portfolio is run from Vernon, British Columbia, with my own capital. I do not manage client assets, accept outside capital, or provide investment advice through this site.
 
-Two long-run premia reward investors for bearing discomfort the market would rather outsource: the equity premium, paid for bearing drawdown and dispersion, and the variance premium — the persistent gap between implied and subsequently realized volatility, paid for supplying the option market with short gamma. Neither premium is free; both are compensation for tail exposure. The programme rests on the conviction that these premia can be harvested on a repeatable basis by an individual operator who respects sizing, documents faithfully, and treats drawdown as a feature of the return process rather than a signal to abandon it.
+## What I am trying to learn
 
-## Three-layer structure
+The project is simple: run a real-money portfolio in a disciplined way and make the learning visible. Each month I want to answer a few basic questions:
 
-The strategy expresses itself through three concurrent layers, each with distinct mechanics and a distinct role in the return stream.
+- What did I do?
+- Why did I do it?
+- Did I follow my own process?
+- What risk did I take?
+- What worked, what did not, and what should change?
 
-**Layer 1 — Capital base.** A passive, low-volatility equity and short-duration treasury allocation held in a tax-advantaged sleeve. This layer captures the equity premium directly and serves as the collateral foundation that the margin sleeve draws against.
+The portfolio uses ETFs as the core building blocks and options when the risk/reward looks worth documenting. The goal is not to make every month look good. The goal is to build a clear record of decisions, risk management, mistakes, and results over time.
 
-**Layer 2 — Systematic variance harvest.** Short-dated, out-of-the-money option structures on broad-market exchange-traded funds, sized and timed against published indicator bands for term structure, implied-minus-realized spread, and trend anchoring. Entries and exits are mechanical; discretion sits at the indicator layer rather than at the trade layer.
+## How I write about it
 
-**Layer 3 — Episodic and tactical.** Event-driven activity around earnings, macro releases, and volatility spikes. Smaller book, higher selectivity, and structurally asymmetric payoffs. This layer exists to catch the occasions when the market mispays a short-term catalyst.
+Monthly notes are written for people who are interested in process. I may include simple return figures, benchmarks, and drawdown context, but the point is not to advertise performance. The point is to make the work legible.
 
-## Risk framework philosophy
+I care more about whether the process is repeatable than whether a given month flatters the portfolio.
 
-Short-volatility payoffs are negatively skewed. Standard deviation understates their tail risk; Sharpe ratio flatters them in good regimes and punishes them in bad ones. The Composite is governed by explicit hard limits — a drawdown circuit breaker, a notional cap tied to the Layer 1 equity base, a term-structure gate, and bounded margin utilization — rather than by an optimizer trying to fit a smooth risk budget to a lumpy return distribution. Position sizing uses fractional-Kelly with additional discounts for skew, then halves the result again. The rule of thumb is straightforward: the book should be sized such that a genuinely bad month is survivable without triggering forced action.
+## Risk
 
-The programme is measured against the CBOE S&P 500 PutWrite Index (PUT) as primary benchmark, against CORRA + 15% as an absolute-return objective, and against the S&P 500 Total Return Index as a secondary reference. Sortino ratio and maximum drawdown carry more weight in assessment than Sharpe or standard deviation.
+Options can create losses quickly, especially when margin is involved. Short-option and volatility-income trades can look steady for long stretches and then become uncomfortable very fast. I treat that as a central feature of the work, not a footnote.
 
-## What this site is, and is not
+For that reason, each monthly note tries to include some context on exposure, drawdown, discipline, and what I would do differently.
 
-This site publishes monthly commentary only. It exists to document the strategy's public surface over time and to establish a contemporaneous record that the Wayback Machine will naturally archive. It does not publish dollar amounts, composite statistics, or GIPS-style performance tables, and it is not a marketing surface for client solicitation.
+## What this is not
 
-The full performance record — net-asset-value statements, time-weighted-return calculations per GIPS sub-period methodology, and the complete trade log with rationale for every entry and exit — is available on request and maintained continuously off-site. See [Contact](/contact/) for the method.
+This is not investment advice, an offer to sell securities, or a solicitation to manage money. It is a public notebook about my own portfolio.

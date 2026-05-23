@@ -2,7 +2,7 @@
 title: "Archive"
 layout: "archives"
 url: "/archive/"
-summary: "All commentary posts, by month."
+summary: "All monthly investing journal posts."
 ---
 
-A chronological list of every commentary post published. PaperMod groups posts by year automatically.
+A chronological list of monthly investing journal posts.

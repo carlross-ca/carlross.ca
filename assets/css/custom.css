@@ -1,4 +1,4 @@
-/* Volatility Income Composite — custom.css
+/* Carl Ross Investing Journal - custom.css
  * Minimal overrides on PaperMod. Typography-first, no chrome.
  */
 
@@ -8,9 +8,62 @@
   --header-height: 60px;
   --footer-height: auto;
   --radius: 4px;
+  --journal-accent: #2f6f6d;
+  --journal-accent-soft: rgba(47, 111, 109, 0.12);
+  --journal-wash: #f7f5ef;
+  --journal-ink-soft: #4f5a5d;
 }
 
-/* Body copy — serif for long-form commentary, system sans for UI */
+body {
+  background:
+    linear-gradient(180deg, rgba(247, 245, 239, 0.74), rgba(255, 255, 255, 0) 260px);
+}
+
+.dark body {
+  background: var(--theme);
+}
+
+.main {
+  padding-top: 16px;
+}
+
+.logo a {
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.nav a {
+  font-size: 0.92rem;
+}
+
+/* Homepage intro - simple editorial signal, not a landing page */
+.home-info {
+  margin-top: 18px;
+  margin-bottom: 28px;
+  padding: 0 0 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.home-info .entry-header h1 {
+  max-width: 12ch;
+  font-size: clamp(2.35rem, 8vw, 4.8rem);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.home-info .entry-content {
+  max-width: 620px;
+  margin-top: 18px;
+  color: var(--journal-ink-soft);
+  font-size: 1.06rem;
+  line-height: 1.65;
+}
+
+.dark .home-info .entry-content {
+  color: var(--secondary);
+}
+
+/* Body copy - serif for long-form commentary, system sans for UI */
 .post-content,
 .post-content p,
 .post-content li {
@@ -23,8 +76,19 @@
 .page-header h1,
 .entry-header h2 {
   font-family: Georgia, "Iowan Old Style", serif;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   font-weight: 600;
+}
+
+.post-title {
+  font-size: clamp(2rem, 6vw, 3.1rem);
+  line-height: 1.08;
+}
+
+.post-meta,
+.breadcrumbs,
+.entry-footer {
+  color: var(--secondary);
 }
 
 /* Subtle link styling */
@@ -36,6 +100,23 @@
 
 .post-content a:hover {
   text-decoration-thickness: 2px;
+}
+
+.post-content > p:first-of-type em {
+  display: block;
+  margin: 0 0 1.8em 0;
+  padding: 0.9em 1em;
+  border-left: 3px solid var(--journal-accent);
+  background: var(--journal-accent-soft);
+  color: var(--journal-ink-soft);
+  font-family: var(--font-family);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  font-style: normal;
+}
+
+.dark .post-content > p:first-of-type em {
+  color: var(--secondary);
 }
 
 /* Headings inside posts */
@@ -61,6 +142,37 @@
   margin-left: 0;
 }
 
+.post-content table {
+  width: 100%;
+  margin: 1.2em 0 1.6em 0;
+  border-collapse: collapse;
+  font-family: var(--font-family);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.post-content th {
+  color: var(--secondary);
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.post-content th,
+.post-content td {
+  padding: 0.7em 0.4em;
+}
+
+.post-content td:last-child,
+.post-content th:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.post-content tr + tr td {
+  border-top: 1px solid var(--border);
+}
+
 /* Disclaimer footer — small, muted, always present */
 .site-disclaimer {
   max-width: var(--main-width);
@@ -82,16 +194,32 @@
 
 /* Post list — compact */
 .post-entry {
-  margin-bottom: 1.2em;
-  padding-bottom: 1.2em;
+  margin-bottom: 0.6em;
+  padding: 1.1em 0;
   border-bottom: 1px solid var(--border);
   box-shadow: none;
   background: transparent;
+  border-radius: 0;
+}
+
+.post-entry .entry-header h2 {
+  font-size: 1.36rem;
+  line-height: 1.2;
+}
+
+.post-entry .entry-content {
+  color: var(--journal-ink-soft);
+  font-size: 0.96rem;
+  line-height: 1.55;
 }
 
 .post-entry:hover {
   transform: none;
   box-shadow: none;
+}
+
+.post-entry:hover .entry-header h2 {
+  color: var(--journal-accent);
 }
 
 /* Archive — tight spacing */
@@ -111,5 +239,13 @@
   .site-disclaimer {
     font-size: 0.75rem;
     padding: 1em 1em;
+  }
+
+  .home-info .entry-header h1 {
+    max-width: 10ch;
+  }
+
+  .post-content table {
+    font-size: 0.86rem;
   }
 }

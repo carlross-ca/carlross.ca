@@ -1,6 +1,6 @@
-# Volatility Income Composite — public site
+# Carl Ross Investing Journal - public site
 
-Hugo static site, GitHub Pages deployment. Public-facing commentary only; no performance tables, no composite statistics, no connection to the trading VPS or database.
+Hugo static site, GitHub Pages deployment. Public-facing personal investing journal; no client assets, no advisory offer, no connection to the trading VPS or database.
 
 ## One-time setup
 
@@ -29,10 +29,10 @@ hugo new commentary/2026-06.md
 
 Edit the generated file, set `draft: false`, commit, push to `main`. GitHub Actions handles the deploy.
 
-## Content tiers
+## Content approach
 
-- **Public (this site):** monthly commentary, percentages + narrative only.
-- **On-request (off-site):** full NAV, TWR, trade log — emailed on request. See `/contact/`.
+- **Public (this site):** monthly notes on process, risk, mistakes, results, and what comes next.
+- **Private:** raw account records, trade logs, database snapshots, and evidence archives are maintained separately.
 
 ## Structure
 
@@ -41,8 +41,8 @@ config.toml                       site-wide config
 archetypes/commentary.md          template for new commentary posts
 content/
   commentary/                     monthly posts + section index
-  about.md                        strategy thesis (high-level)
-  contact.md                      request method for private record
+  about.md                        journal purpose and safety framing
+  contact.md                      LinkedIn contact
   archive.md                      chronological list (PaperMod archives layout)
 assets/css/custom.css             typography + disclaimer styling
 layouts/partials/footer.html      disclaimer footer (every page)

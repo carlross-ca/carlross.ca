@@ -6,46 +6,31 @@ month_covered: "{{ dateFormat "January 2006" .Date }}"
 tags:
   - commentary
   - monthly
-summary: "Commentary for {{ dateFormat "January 2006" .Date }}."
+summary: "Monthly investing journal note for {{ dateFormat "January 2006" .Date }}."
 ---
 
-## Market environment
+_This is a personal investing journal, not investment advice or an offer to manage money._
 
-{{/* Token: {{MARKET_ENVIRONMENT}} — replaced by Session-6 report generator.
-     One to three sentences on regime. VIX level/structure in qualitative terms,
-     rates backdrop, any macro event dominating the period. No dollar figures. */}}
+## What happened
 
-_Placeholder for market-environment narrative._
+_Placeholder for market and portfolio context._
 
-## Strategy activity
+## What I did
 
-{{/* Token: {{LAYER_SUMMARY}} — percentage contributions only.
-     Absolute dollar amounts, contract counts, strike specifics, and notional
-     values are excluded by policy. */}}
+_Placeholder for the main decisions and trades._
 
-- **Layer 1 (capital base).** _Placeholder._
-- **Layer 2 (systematic VRP).** _Placeholder._
-- **Layer 3 (episodic/tactical).** _Placeholder._
+## Result
 
-Month-over-month return: **_XX.XX%_**.  
-Year-to-date return: **_XX.XX%_**.
+| Measure | Result |
+| --- | ---: |
+| Monthly return | _XX.XX%_ |
+| Benchmark return | _XX.XX%_ |
+| Since-inception return | _XX.XX%_ |
 
-## Key observations
+## What I learned
 
-{{/* Token: {{OBSERVATIONS}} — bullet points or short prose.
-     Anything notable from the trade log: a roll that worked, a thesis that
-     did not, indicator signals that were respected or overridden. */}}
+_Placeholder for observations, mistakes, and process notes._
 
-_Placeholder for observations._
+## What I am watching next
 
-## Forward stance
-
-{{/* Token: {{FORWARD_STANCE}} — qualitative posture heading into next month.
-     Risk-on / risk-off / neutral, specific catalysts flagged, layer weighting
-     adjustments if any. */}}
-
-_Placeholder for forward stance._
-
----
-
-_The full performance record (NAV, TWR per GIPS sub-period methodology, trade log) is available on request. See [Contact](/contact/)._
+_Placeholder for the next month._

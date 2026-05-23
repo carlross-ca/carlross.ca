@@ -1,6 +1,6 @@
 baseURL = "https://carlross.ca/"
 languageCode = "en-ca"
-title = "Volatility Income Composite"
+title = "Carl Ross Investing Journal"
 theme = "PaperMod"
 enableRobotsTXT = true
 enableEmoji = false
@@ -10,7 +10,7 @@ pagination.pagerSize = 20
 
 [params]
   author = "Carl Ross"
-  description = "Monthly commentary on a three-layer equity and volatility risk-premium strategy, managed from Vernon, BC."
+  description = "A personal investing journal about ETFs, options, process, risk, mistakes, and results."
   defaultTheme = "light"
   disableThemeToggle = false
   ShowReadingTime = true
@@ -27,11 +27,11 @@ pagination.pagerSize = 20
   assets.disableHLJS = true
 
   [params.homeInfoParams]
-    Title = "Volatility Income Composite"
+    Title = "Carl Ross Investing Journal"
     Content = """
-A three-layer strategy harvesting equity and variance risk premium, managed from Vernon, BC.
+I document a personal portfolio using ETFs and options, with monthly notes on process, risk, mistakes, and results.
 
-This site publishes monthly commentary only. The full performance record is available on request — see the [Contact](/contact/) page.
+This is a personal investing journal, not investment advice or an offer to manage money.
 """
 
 [[params.socialIcons]]

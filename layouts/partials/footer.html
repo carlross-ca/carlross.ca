@@ -1,13 +1,13 @@
 {{- if not (.Param "hideFooter") }}
 <footer class="footer">
   <div class="site-disclaimer" role="contentinfo">
-    <p><strong>Disclosures.</strong> The Volatility Income Composite is a single portfolio, self-administered by one individual for personal capital; no external client assets are managed. Performance figures, where referenced, are self-calculated and have not been subject to independent GIPS verification — GIPS methodology is applied as a voluntary discipline and does not constitute a claim of GIPS compliance.</p>
+    <p><strong>Disclosure.</strong> This site is a personal investing journal. It documents a portfolio run with personal capital only. I do not manage client assets, accept outside capital, or provide investment advice through this site.</p>
 
-    <p><strong>Risk.</strong> Leverage is used materially through margin-account option activity. Short-volatility strategies exhibit negatively-skewed, fat-tailed return distributions; losses in leveraged option positions can exceed premium received. Past performance is not indicative of future results. Return targets are targets, not guarantees.</p>
+    <p><strong>Risk.</strong> ETFs and options involve risk. Options and margin can produce losses quickly, and losses may exceed premium received. Past performance is not indicative of future results.</p>
 
-    <p><strong>Jurisdiction and purpose.</strong> The Composite is managed from Canada under applicable Canadian tax and securities rules. This site contains commentary for illustrative and documentary purposes only. Nothing published here constitutes investment advice, an offer to sell, or a solicitation to buy any security. Readers are responsible for their own investment decisions and should consult qualified advisers.</p>
+    <p><strong>Purpose.</strong> Nothing published here is an offer to sell securities, a solicitation to buy securities, or a recommendation for any reader. Readers are responsible for their own investment decisions and should consult qualified advisers.</p>
 
-    <p>&copy; {{ now.Format "2006" }} {{ .Site.Params.author | default "Carl Ross" }}. Commentary published under a personal, non-advisory capacity. <a href="/contact/">Contact</a> for the private performance record.</p>
+    <p>&copy; {{ now.Format "2006" }} {{ .Site.Params.author | default "Carl Ross" }}. Published in a personal, non-advisory capacity. <a href="/contact/">Contact</a>.</p>
   </div>
 </footer>
 {{- end }}
