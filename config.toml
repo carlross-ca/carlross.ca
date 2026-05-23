@@ -26,6 +26,14 @@ pagination.pagerSize = 20
   assets.disableFingerprinting = false
   assets.disableHLJS = true
 
+  [params.homeInfoParams]
+    Title = "Carl Ross Investing Journal"
+    Content = """
+I document a personal portfolio using ETFs and options, with monthly notes on process, risk, mistakes, and results.
+
+This is a personal investing journal, not investment advice or an offer to manage money.
+"""
+
 [menu]
   [[menu.main]]
     identifier = "about"
