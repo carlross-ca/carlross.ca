@@ -9,7 +9,7 @@ summary: "About this public portfolio record."
 
 This site is my public portfolio record. I document a personal portfolio using ETFs and options.
 
-The portfolio is run from Vernon, British Columbia, with my own capital. I do not manage client assets, accept outside capital, or provide investment advice through this site.
+The portfolio is run from British Columbia, Canada, with my own capital. I do not manage client assets, accept outside capital, or provide investment advice through this site.
 
 ## The Rule
 
@@ -26,8 +26,6 @@ The automated record keeps me honest because every month uses the same format. M
 ## Method
 
 The portfolio uses ETFs as the base and options selectively when the risk/reward is worth documenting. Monthly performance records are generated from the reporting database after checks pass.
-
-The format is GIPS-inspired, but this is not a GIPS-compliant presentation.
 
 ## Risk
 

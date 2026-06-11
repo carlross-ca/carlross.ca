@@ -1,6 +1,6 @@
 ---
 title: "Methodology"
-date: 2026-06-10
+date: 2026-05-01
 draft: false
 summary: "How the public portfolio record is presented."
 ---
@@ -38,7 +38,3 @@ Performance records are monthly and automated after reporting checks pass.
 Each monthly record includes 1 month, trailing 3 month, trailing 12 month, and since-inception figures. Quarter-end and year-end performance are therefore already embedded in the monthly record.
 
 Manual PM notes are separate and optional.
-
-## GIPS Status
-
-This is not a GIPS-compliant presentation. The format is GIPS-inspired only in the narrow sense that it favors consistency, benchmark comparison, clear methodology, and separation of external cash flows from returns.

@@ -1,5 +1,6 @@
 ---
 title: "Contact"
+date: 2026-05-01
 draft: false
 summary: "How to get in touch."
 ---
