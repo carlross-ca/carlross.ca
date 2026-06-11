@@ -21,11 +21,20 @@
     </div>
     <div class="report-pair">
       <figure class="report-figure">
+        {{ with .Params.path_chart }}<img class="path-fallback" src="{{ . }}" alt="Portfolio versus benchmark performance path">{{ end }}
         <svg class="js-path-chart" viewBox="0 0 720 360" role="img" aria-label="Portfolio and S&P 500 TR indexed to 100"></svg>
         <figcaption>Indexed to 100 at selected period start.</figcaption>
       </figure>
       <div class="table-wrap">
-        <table class="js-record-table"></table>
+        <table class="js-record-table">
+          <thead><tr><th>Measure</th><th>Portfolio</th><th>S&amp;P 500 TR</th><th>Difference</th></tr></thead>
+          <tbody>
+            <tr><td>1M</td><td>{{ .Params.portfolio_1m | default "n/a" }}</td><td>{{ .Params.benchmark_1m | default "n/a" }}</td><td>{{ .Params.excess_1m | default "n/a" }}</td></tr>
+            <tr><td>3M</td><td>{{ .Params.portfolio_3m | default "n/a" }}</td><td>{{ .Params.benchmark_3m | default "n/a" }}</td><td>{{ .Params.excess_3m | default "n/a" }}</td></tr>
+            <tr><td>12M</td><td>{{ .Params.portfolio_12m | default "n/a" }}</td><td>{{ .Params.benchmark_12m | default "n/a" }}</td><td>{{ .Params.excess_12m | default "n/a" }}</td></tr>
+            <tr><td>Since inception</td><td>{{ .Params.portfolio_since_inception | default "n/a" }}</td><td>{{ .Params.benchmark_since_inception | default "n/a" }}</td><td>{{ .Params.excess_since_inception | default "n/a" }}</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -37,10 +46,13 @@
     </div>
     <div class="report-pair">
       <figure class="report-figure">
+        {{ with .Params.driver_chart }}<img class="driver-fallback" src="{{ . }}" alt="Return drivers as percent of beginning NAV">{{ end }}
         <svg class="js-driver-chart" viewBox="0 0 720 360" role="img" aria-label="NAV return drivers"></svg>
       </figure>
       <div class="table-wrap">
-        <table class="js-driver-table"></table>
+        <table class="js-driver-table">
+          <tbody><tr><td>See chart</td></tr></tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -52,11 +64,21 @@
     </div>
     <div class="report-pair">
       <figure class="report-figure">
+        <svg class="risk-fallback" viewBox="0 0 720 360" role="img" aria-label="Risk breach days">
+          <rect width="720" height="360" fill="#fbfaf6"></rect>
+          <line x1="60" x2="692" y1="314" y2="314" stroke="#d7d0c4"></line>
+          <rect x="296" y="84" width="128" height="230" fill="#315f5b"></rect>
+          <text x="360" y="72" text-anchor="middle" font-size="16" fill="#141719">{{ .Params.risk_breach_days | default "n/a" }}</text>
+          <text x="360" y="340" text-anchor="middle" font-size="14" fill="#5f676b">{{ .Params.month_covered | default .Title }}</text>
+        </svg>
         <svg class="js-risk-chart" viewBox="0 0 720 360" role="img" aria-label="Monthly risk breach days"></svg>
         <figcaption>Total breach days by included month.</figcaption>
       </figure>
       <div class="table-wrap">
-        <table class="js-risk-table"></table>
+        <table class="js-risk-table">
+          <thead><tr><th>Metric</th><th>Breach Days</th></tr></thead>
+          <tbody><tr><td>Total</td><td>{{ .Params.risk_breach_days | default "n/a" }}</td></tr></tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -64,6 +86,7 @@
   <script type="application/json" id="report-period-data">{{ $periods | jsonify }}</script>
   <script>
   (() => {
+    document.documentElement.classList.add("js-enabled");
     const periods = JSON.parse(document.getElementById("report-period-data").textContent);
     const byKey = Object.fromEntries(periods.map((p) => [p.key, p]));
     const fmt = (v) => v ?? "n/a";

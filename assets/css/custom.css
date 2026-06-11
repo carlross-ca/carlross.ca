@@ -286,6 +286,24 @@ h2 {
   height: auto;
 }
 
+.js-path-chart,
+.js-driver-chart,
+.js-risk-chart {
+  display: none;
+}
+
+.js-enabled .path-fallback,
+.js-enabled .driver-fallback,
+.js-enabled .risk-fallback {
+  display: none;
+}
+
+.js-enabled .js-path-chart,
+.js-enabled .js-driver-chart,
+.js-enabled .js-risk-chart {
+  display: block;
+}
+
 .js-record-table td:first-child,
 .js-driver-table td:first-child,
 .js-risk-table td:first-child {
