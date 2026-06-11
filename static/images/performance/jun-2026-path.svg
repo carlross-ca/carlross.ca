@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" role="img">
+  <rect width="720" height="420" fill="#fbfaf6"/>
+  <g stroke="#d7d0c4" stroke-width="1">
+    <line x1="64" y1="330" x2="660" y2="330"/>
+    <line x1="64" y1="70" x2="660" y2="70"/>
+  </g>
+  <text x="64" y="38" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#141719">Performance Path</text>
+  <polyline points="64.0,88.5 149.1,117.1 234.3,81.1 319.4,204.1 404.6,330.0 489.7,193.4 574.9,251.7 660.0,299.5" fill="none" stroke="#315f5b" stroke-width="4"/>
+  <polyline points="64.0,78.7 149.1,74.7 234.3,88.3 319.4,70.0 404.6,157.9 489.7,141.5 574.9,150.4 660.0,211.8" fill="none" stroke="#8b5f2b" stroke-width="4"/>
+  <text x="64" y="372" font-family="Inter, Arial, sans-serif" font-size="13" fill="#315f5b">Portfolio</text>
+  <text x="160" y="372" font-family="Inter, Arial, sans-serif" font-size="13" fill="#8b5f2b">S&amp;P 500 TR CAD</text>
+</svg>

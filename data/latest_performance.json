@@ -1,0 +1,27 @@
+{
+  "title": "June 2026 Performance Record",
+  "date": "2026-06-10T08:00:00-07:00",
+  "draft": false,
+  "month_covered": "June 2026",
+  "portfolio_1m": "-5.61%",
+  "benchmark_1m": "-3.16%",
+  "excess_1m": "-2.45%",
+  "portfolio_3m": "0.09%",
+  "benchmark_3m": "3.24%",
+  "excess_3m": "-3.15%",
+  "portfolio_12m": "0.09%",
+  "benchmark_12m": "3.24%",
+  "excess_12m": "-3.15%",
+  "portfolio_since_inception": "0.09%",
+  "benchmark_since_inception": "3.24%",
+  "excess_since_inception": "-3.15%",
+  "current_drawdown": "-6.07%",
+  "max_drawdown": "-6.91%",
+  "risk_breach_days": "34",
+  "path_chart": "/images/performance/jun-2026-path.svg",
+  "driver_chart": "/images/performance/jun-2026-drivers.svg",
+  "tags": [
+    "performance"
+  ],
+  "summary": "Public performance record for June 2026."
+}
