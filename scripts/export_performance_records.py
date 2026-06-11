@@ -107,6 +107,41 @@ def risk_breaches(conn: sqlite3.Connection, period_key: str) -> int | None:
     return None if found is None or found["breaches"] is None else int(found["breaches"])
 
 
+def decimal(value: float | None, places: int = 3) -> str:
+    if value is None:
+        return "n/a"
+    return f"{value:.{places}f}"
+
+
+def risk_rows(conn: sqlite3.Connection, period_key: str) -> list[dict]:
+    metric_defs = [
+        ("asset_delta", "Asset Delta / AUM", "breach_delta"),
+        ("asset_gamma", "Asset Gamma / AUM", "breach_gamma"),
+        ("net_vega", "P&L per +10 IV / AUM", "breach_vega"),
+        ("net_theta", "Annual Theta / AUM", "breach_theta"),
+        ("margin_power", "Margin Cushion / AUM", "breach_margin"),
+        ("open_contracts", "Contracts", "breach_open_contracts"),
+        ("rolling_30d_buy_sell_count", "30d Trade Count", "breach_trade_count"),
+        ("vix", "VIX", "breach_vix"),
+    ]
+    daily = rows(conn, "SELECT * FROM v_report_risk_daily WHERE period_key=?", (period_key,))
+    out = []
+    for key, label, breach_key in metric_defs:
+        values = sorted(float(r[key]) for r in daily if r[key] is not None)
+        if not values:
+            continue
+        n = len(values)
+        median = values[n // 2] if n % 2 else (values[n // 2 - 1] + values[n // 2]) / 2
+        breach_days = sum(int(r[breach_key] or 0) for r in daily if breach_key in r.keys() and r[key] is not None)
+        out.append({
+            "metric": label,
+            "avg": decimal(sum(values) / n),
+            "median": decimal(median),
+            "breach_days": breach_days,
+        })
+    return out
+
+
 def drawdown(conn: sqlite3.Connection) -> tuple[float | None, float | None]:
     found = row(
         conn,
@@ -235,6 +270,7 @@ def write_record(conn: sqlite3.Connection, period_key: str, root: Path) -> dict:
     current_dd, max_dd = drawdown(conn)
     breaches = risk_breaches(conn, period_key)
     drivers = public_drivers(conn, period_key)
+    risks = risk_rows(conn, period_key)
 
     image_dir = root / "static" / "images" / "performance"
     image_dir.mkdir(parents=True, exist_ok=True)
@@ -269,6 +305,13 @@ def write_record(conn: sqlite3.Connection, period_key: str, root: Path) -> dict:
         "tags": ["performance"],
         "summary": f"Public performance record for {month['display_name']}.",
     }
+    driver_lines = "\n".join(
+        f'| {d["label"]} | {signed_pct(d["value"])} |' for d in drivers
+    ) or "| n/a | n/a |"
+    risk_lines = "\n".join(
+        f'| {r["metric"]} | {r["avg"]} | {r["median"]} | {r["breach_days"]} |' for r in risks
+    ) or "| n/a | n/a | n/a | n/a |"
+
     body = f"""{front_matter(front)}
 
 ## Record
@@ -280,6 +323,14 @@ def write_record(conn: sqlite3.Connection, period_key: str, root: Path) -> dict:
 | 12M | {front["portfolio_12m"]} | {front["benchmark_12m"]} | {front["excess_12m"]} |
 | Since inception | {front["portfolio_since_inception"]} | {front["benchmark_since_inception"]} | {front["excess_since_inception"]} |
 
+## NAV Change Drivers
+
+Percent of beginning NAV. Dollar values are intentionally excluded.
+
+| Driver | Contribution |
+| --- | ---: |
+{driver_lines}
+
 ## Risk
 
 | Measure | Result |
@@ -287,6 +338,12 @@ def write_record(conn: sqlite3.Connection, period_key: str, root: Path) -> dict:
 | Current drawdown | {front["current_drawdown"]} |
 | Max drawdown | {front["max_drawdown"]} |
 | Risk breach days | {front["risk_breach_days"]} |
+
+## Risk Metrics
+
+| Metric | Average Daily Value | Median Daily Value | Breach Days |
+| --- | ---: | ---: | ---: |
+{risk_lines}
 
 No NAV dollars, net P&L dollars, deposits, withdrawals, or account balances are included.
 """
