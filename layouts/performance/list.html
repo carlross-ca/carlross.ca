@@ -2,7 +2,7 @@
 <section class="article-head">
   <p class="eyebrow">Public record</p>
   <h1>Performance</h1>
-  <p class="lede small">Automated monthly records. Returns are percentages.</p>
+  <p class="lede small">Automated monthly records. Returns are percentages. Inception date: 2026-05-01.</p>
 </section>
 <div class="table-wrap">
   <table class="archive-table">
@@ -13,8 +13,7 @@
         <th>3M</th>
         <th>12M</th>
         <th>Since Inc.</th>
-        <th>Max DD</th>
-        <th>Breaches</th>
+        <th>Since Inc. SP500TR</th>
       </tr>
     </thead>
     <tbody>
@@ -25,8 +24,7 @@
         <td>{{ .Params.portfolio_3m | default "n/a" }}</td>
         <td>{{ .Params.portfolio_12m | default "n/a" }}</td>
         <td>{{ .Params.portfolio_since_inception | default "n/a" }}</td>
-        <td>{{ .Params.max_drawdown | default "n/a" }}</td>
-        <td>{{ .Params.risk_breach_days | default "n/a" }}</td>
+        <td>{{ .Params.benchmark_since_inception | default "n/a" }}</td>
       </tr>
       {{ end }}
     </tbody>

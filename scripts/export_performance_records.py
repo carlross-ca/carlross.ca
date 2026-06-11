@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export public-safe performance records from the trading SQLite DB to Hugo."""
+"""Export performance records from the trading SQLite DB to Hugo."""
 
 from __future__ import annotations
 
@@ -32,6 +32,8 @@ def front_matter(data: dict) -> str:
     for key, value in data.items():
         if isinstance(value, bool):
             lines.append(f"{key}: {'true' if value else 'false'}")
+        elif isinstance(value, (dict, list)):
+            lines.append(f"{key}: {json.dumps(value)}")
         elif isinstance(value, list):
             lines.append(f"{key}:")
             for item in value:
@@ -112,6 +114,39 @@ def decimal(value: float | None, places: int = 3) -> str:
     return f"{value:.{places}f}"
 
 
+def compact_decimal(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    if float(value).is_integer():
+        return f"{int(value):,}"
+    return f"{float(value):,.6f}".rstrip("0").rstrip(".")
+
+
+def risk_limit_map(conn: sqlite3.Connection) -> dict[str, sqlite3.Row]:
+    try:
+        return {r["metric_key"]: r for r in rows(conn, "SELECT * FROM v_limits_risk")}
+    except sqlite3.Error:
+        return {}
+
+
+def report_limit_label(key: str, limits: dict[str, sqlite3.Row]) -> str:
+    limit = limits.get(key)
+    if limit is None:
+        return "n/a"
+    op = limit["good_operator"]
+    lo = limit["good_min"]
+    hi = limit["good_max"]
+    if op == "between":
+        return f"{compact_decimal(lo)} to {compact_decimal(hi)}"
+    if op == "lt":
+        return f"< {compact_decimal(hi)}"
+    if op == "gte":
+        return f">= {compact_decimal(lo)}"
+    if op == "eq_contango":
+        return "contango"
+    return str(limit["breach_logic"] or "n/a")
+
+
 def risk_rows(conn: sqlite3.Connection, period_key: str) -> list[dict]:
     metric_defs = [
         ("asset_delta", "Asset Delta / AUM", "breach_delta"),
@@ -124,6 +159,7 @@ def risk_rows(conn: sqlite3.Connection, period_key: str) -> list[dict]:
         ("vix", "VIX", "breach_vix"),
     ]
     daily = rows(conn, "SELECT * FROM v_report_risk_daily WHERE period_key=?", (period_key,))
+    limits = risk_limit_map(conn)
     out = []
     for key, label, breach_key in metric_defs:
         values = sorted(float(r[key]) for r in daily if r[key] is not None)
@@ -136,9 +172,31 @@ def risk_rows(conn: sqlite3.Connection, period_key: str) -> list[dict]:
             "metric": label,
             "avg": decimal(sum(values) / n),
             "median": decimal(median),
+            "limit": report_limit_label(key, limits),
             "breach_days": breach_days,
+            "total_days": n,
         })
     return out
+
+
+def risk_months(conn: sqlite3.Connection, period_key: str) -> list[dict]:
+    info = rows(conn, "PRAGMA table_info(v_report_risk_daily)")
+    breach_cols = [r["name"] for r in info if str(r["name"]).startswith("breach_")]
+    if not breach_cols:
+        return []
+    expr = " + ".join(f"COALESCE({c},0)" for c in breach_cols)
+    found = rows(
+        conn,
+        f"""
+        SELECT SUBSTR(date,1,7) AS month, SUM({expr}) AS breaches
+        FROM v_report_risk_daily
+        WHERE period_key=?
+        GROUP BY SUBSTR(date,1,7)
+        ORDER BY month
+        """,
+        (period_key,),
+    )
+    return [{"month": r["month"], "breaches": int(r["breaches"] or 0)} for r in found]
 
 
 def drawdown(conn: sqlite3.Connection) -> tuple[float | None, float | None]:
@@ -189,26 +247,91 @@ def public_drivers(conn: sqlite3.Connection, period_key: str) -> list[dict]:
     return out
 
 
+def path_points(path: list[sqlite3.Row]) -> list[dict]:
+    if not path:
+        return []
+    first_equity = float(path[0]["equity_index"] or 100)
+    first_benchmark = float(path[0]["spx_tr_index_cad"] or 100)
+    return [
+        {
+            "date": str(r["date"]),
+            "portfolio": round(float(r["equity_index"] or first_equity) / first_equity * 100, 4),
+            "benchmark": round(float(r["spx_tr_index_cad"] or first_benchmark) / first_benchmark * 100, 4),
+        }
+        for r in path
+    ]
+
+
+def report_period_payload(conn: sqlite3.Connection, key: str, label: str) -> dict | None:
+    period = score(conn, key)
+    if period is None:
+        return None
+    drivers = public_drivers(conn, key)
+    risks = risk_rows(conn, key)
+    total_days = sorted({int(r["total_days"]) for r in risks if r.get("total_days") is not None})
+    return {
+        "key": label.lower().replace(" ", "_").replace(".", ""),
+        "period_key": key,
+        "label": label,
+        "start_date": period["first_date"],
+        "end_date": period["last_date"],
+        "portfolio": pct(period["portfolio"]),
+        "benchmark": pct(period["benchmark"]),
+        "excess": signed_pct(period["excess"]),
+        "path": path_points(period["path"]),
+        "drivers": [
+            {"label": d["label"], "value": round(float(d["value"]), 6), "display": signed_pct(d["value"])}
+            for d in drivers
+        ],
+        "risk_rows": risks,
+        "risk_months": risk_months(conn, key),
+        "risk_total_days": total_days[0] if len(total_days) == 1 else None,
+    }
+
+
+def report_periods(conn: sqlite3.Connection, month_key: str) -> list[dict]:
+    requested = [
+        (month_key, "1M"),
+        ("trailing_3m", "3M"),
+        ("trailing_12m", "12M"),
+        ("since_inception", "Since Inception"),
+    ]
+    out = []
+    for key, label in requested:
+        payload = report_period_payload(conn, key, label)
+        if payload is not None:
+            out.append(payload)
+    return out
+
+
 def svg_path_chart(path: list[sqlite3.Row], out: Path) -> None:
     width, height = 720, 420
     left, right, top, bottom = 64, 660, 70, 330
+    first_equity = float(path[0]["equity_index"] or 100) if path else 100
+    first_benchmark = float(path[0]["spx_tr_index_cad"] or 100) if path else 100
     vals = []
     for r in path:
-        vals.append(float(r["equity_index"] or 100) / 100 - 1)
-        vals.append(float(r["spx_tr_index_cad"] or 100) / 100 - 1)
-    lo, hi = min(vals + [0]), max(vals + [0])
+        vals.append(float(r["equity_index"] or first_equity) / first_equity * 100)
+        vals.append(float(r["spx_tr_index_cad"] or first_benchmark) / first_benchmark * 100)
+    lo, hi = min(vals + [100]), max(vals + [100])
     if hi == lo:
-        hi, lo = hi + 0.01, lo - 0.01
+        hi, lo = hi + 1, lo - 1
 
     def points(col: str) -> str:
         n = max(len(path) - 1, 1)
+        base = first_equity if col == "equity_index" else first_benchmark
         pts = []
         for i, r in enumerate(path):
-            v = float(r[col] or 100) / 100 - 1
+            v = float(r[col] or base) / base * 100
             x = left + (right - left) * i / n
             y = bottom - (v - lo) / (hi - lo) * (bottom - top)
             pts.append(f"{x:.1f},{y:.1f}")
         return " ".join(pts)
+
+    start_date = path[0]["date"] if path else "n/a"
+    end_date = path[-1]["date"] if path else "n/a"
+    mid_date = path[len(path) // 2]["date"] if path else "n/a"
+    baseline_y = bottom - (100 - lo) / (hi - lo) * (bottom - top)
 
     out.write_text(
         f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" role="img">
@@ -216,12 +339,17 @@ def svg_path_chart(path: list[sqlite3.Row], out: Path) -> None:
   <g stroke="#d7d0c4" stroke-width="1">
     <line x1="{left}" y1="{bottom}" x2="{right}" y2="{bottom}"/>
     <line x1="{left}" y1="{top}" x2="{right}" y2="{top}"/>
+    <line x1="{left}" y1="{baseline_y:.1f}" x2="{right}" y2="{baseline_y:.1f}"/>
   </g>
-  <text x="64" y="38" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#141719">Performance Path</text>
+  <text x="64" y="38" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#141719">Performance Path: {start_date} to {end_date}</text>
+  <text x="54" y="{baseline_y + 4:.1f}" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5f676b">100</text>
   <polyline points="{points("equity_index")}" fill="none" stroke="#315f5b" stroke-width="4"/>
   <polyline points="{points("spx_tr_index_cad")}" fill="none" stroke="#8b5f2b" stroke-width="4"/>
-  <text x="64" y="372" font-family="Inter, Arial, sans-serif" font-size="13" fill="#315f5b">Portfolio</text>
-  <text x="160" y="372" font-family="Inter, Arial, sans-serif" font-size="13" fill="#8b5f2b">S&amp;P 500 TR CAD</text>
+  <text x="{left}" y="358" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5f676b">{start_date}</text>
+  <text x="{(left + right) / 2:.1f}" y="358" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5f676b">{mid_date}</text>
+  <text x="{right}" y="358" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5f676b">{end_date}</text>
+  <text x="64" y="392" font-family="Inter, Arial, sans-serif" font-size="13" fill="#315f5b">Portfolio</text>
+  <text x="160" y="392" font-family="Inter, Arial, sans-serif" font-size="13" fill="#8b5f2b">S&amp;P 500 TR CAD</text>
 </svg>
 """,
         encoding="utf-8",
@@ -270,6 +398,7 @@ def write_record(conn: sqlite3.Connection, period_key: str, root: Path) -> dict:
     breaches = risk_breaches(conn, period_key)
     drivers = public_drivers(conn, period_key)
     risks = risk_rows(conn, period_key)
+    periods = report_periods(conn, period_key)
 
     image_dir = root / "static" / "images" / "performance"
     image_dir.mkdir(parents=True, exist_ok=True)
@@ -301,6 +430,7 @@ def write_record(conn: sqlite3.Connection, period_key: str, root: Path) -> dict:
         "risk_breach_days": "n/a" if breaches is None else str(breaches),
         "path_chart": path_chart,
         "driver_chart": driver_chart,
+        "report_periods": periods,
         "tags": ["performance"],
         "summary": f"Public performance record for {month['display_name']}.",
     }
@@ -308,8 +438,8 @@ def write_record(conn: sqlite3.Connection, period_key: str, root: Path) -> dict:
         f'| {d["label"]} | {signed_pct(d["value"])} |' for d in drivers
     ) or "| n/a | n/a |"
     risk_lines = "\n".join(
-        f'| {r["metric"]} | {r["avg"]} | {r["median"]} | {r["breach_days"]} |' for r in risks
-    ) or "| n/a | n/a | n/a | n/a |"
+        f'| {r["metric"]} | {r["avg"]} | {r["median"]} | {r["limit"]} | {r["breach_days"]} |' for r in risks
+    ) or "| n/a | n/a | n/a | n/a | n/a |"
 
     body = f"""{front_matter(front)}
 
@@ -331,17 +461,12 @@ Percent of beginning NAV.
 {driver_lines}
 
 ## Risk
-
-| Measure | Result |
-| --- | ---: |
-| Current drawdown | {front["current_drawdown"]} |
-| Max drawdown | {front["max_drawdown"]} |
-| Risk breach days | {front["risk_breach_days"]} |
+Risk table is shown in the report template.
 
 ## Risk Metrics
 
-| Metric | Average Daily Value | Median Daily Value | Breach Days |
-| --- | ---: | ---: | ---: |
+| Metric | Average Daily Value | Median Daily Value | Breach Limit | Breach Days |
+| --- | ---: | ---: | --- | ---: |
 {risk_lines}
 
 """

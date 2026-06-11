@@ -3,29 +3,153 @@
   <header class="article-head">
     <p class="eyebrow">Automated performance record</p>
     <h1>{{ .Title }}</h1>
-    <p class="muted">CAD. Time-weighted. Public-safe.</p>
+    <p class="muted">CAD. Time-weighted.</p>
   </header>
 
-  <section class="metric-grid wide">
-    <div><span>1M Portfolio</span><strong>{{ .Params.portfolio_1m | default "n/a" }}</strong></div>
-    <div><span>1M Benchmark</span><strong>{{ .Params.benchmark_1m | default "n/a" }}</strong></div>
-    <div><span>1M Difference</span><strong>{{ .Params.excess_1m | default "n/a" }}</strong></div>
-    <div><span>Max Drawdown</span><strong>{{ .Params.max_drawdown | default "n/a" }}</strong></div>
-    <div><span>3M Portfolio</span><strong>{{ .Params.portfolio_3m | default "n/a" }}</strong></div>
-    <div><span>12M Portfolio</span><strong>{{ .Params.portfolio_12m | default "n/a" }}</strong></div>
-    <div><span>Since Inception</span><strong>{{ .Params.portfolio_since_inception | default "n/a" }}</strong></div>
-    <div><span>Risk Breach Days</span><strong>{{ .Params.risk_breach_days | default "n/a" }}</strong></div>
+  {{ $periods := .Params.report_periods }}
+  {{ if $periods }}
+  <nav class="period-tabs" aria-label="Report period">
+    {{ range $i, $p := $periods }}
+    <button type="button" class="period-tab{{ if eq $i 0 }} active{{ end }}" data-period="{{ $p.key }}">{{ $p.label }}</button>
+    {{ end }}
+  </nav>
+
+  <section class="report-section">
+    <div class="section-head">
+      <h2>Performance</h2>
+      <span class="muted js-period-dates"></span>
+    </div>
+    <div class="report-pair">
+      <figure class="report-figure">
+        <svg class="js-path-chart" viewBox="0 0 720 360" role="img" aria-label="Portfolio and S&P 500 TR indexed to 100"></svg>
+        <figcaption>Indexed to 100 at selected period start.</figcaption>
+      </figure>
+      <div class="table-wrap">
+        <table class="js-record-table"></table>
+      </div>
+    </div>
   </section>
 
-  {{ if or .Params.path_chart .Params.driver_chart }}
+  <section class="report-section">
+    <div class="section-head">
+      <h2>NAV Return Drivers</h2>
+      <span class="muted">Percent of beginning NAV</span>
+    </div>
+    <div class="report-pair">
+      <figure class="report-figure">
+        <svg class="js-driver-chart" viewBox="0 0 720 360" role="img" aria-label="NAV return drivers"></svg>
+      </figure>
+      <div class="table-wrap">
+        <table class="js-driver-table"></table>
+      </div>
+    </div>
+  </section>
+
+  <section class="report-section">
+    <div class="section-head">
+      <h2>Risk Metrics</h2>
+      <span class="muted js-risk-days"></span>
+    </div>
+    <div class="report-pair">
+      <figure class="report-figure">
+        <svg class="js-risk-chart" viewBox="0 0 720 360" role="img" aria-label="Monthly risk breach days"></svg>
+        <figcaption>Total breach days by included month.</figcaption>
+      </figure>
+      <div class="table-wrap">
+        <table class="js-risk-table"></table>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" id="report-period-data">{{ $periods | jsonify }}</script>
+  <script>
+  (() => {
+    const periods = JSON.parse(document.getElementById("report-period-data").textContent);
+    const byKey = Object.fromEntries(periods.map((p) => [p.key, p]));
+    const fmt = (v) => v ?? "n/a";
+    const num = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    function lineChart(svg, points) {
+      const w = 720, h = 360, l = 58, r = 26, t = 28, b = 54;
+      if (!points.length) {
+        svg.innerHTML = `<rect width="${w}" height="${h}" fill="#fbfaf6"></rect><text x="24" y="42" font-size="13" fill="#5f676b">No path data.</text>`;
+        return;
+      }
+      const vals = points.flatMap((p) => [num(p.portfolio), num(p.benchmark), 100]);
+      const min = Math.min(...vals), max = Math.max(...vals);
+      const pad = Math.max((max - min) * 0.12, 1);
+      const lo = min - pad, hi = max + pad;
+      const x = (i) => l + (w - l - r) * (points.length <= 1 ? 0 : i / (points.length - 1));
+      const y = (v) => t + (hi - v) / (hi - lo) * (h - t - b);
+      const path = (key) => points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(num(p[key])).toFixed(1)}`).join(" ");
+      const ticks = [lo, 100, hi].sort((a, b) => a - b);
+      const dateTicks = points.length > 1 ? [0, Math.floor((points.length - 1) / 2), points.length - 1] : [0];
+      svg.innerHTML = `
+        <rect width="${w}" height="${h}" fill="#fbfaf6"></rect>
+        ${ticks.map((v) => `<line x1="${l}" x2="${w-r}" y1="${y(v)}" y2="${y(v)}" stroke="#d7d0c4"></line><text x="${l-10}" y="${y(v)+4}" text-anchor="end" font-size="12" fill="#5f676b">${v.toFixed(1)}</text>`).join("")}
+        <path d="${path("portfolio")}" fill="none" stroke="#315f5b" stroke-width="3"></path>
+        <path d="${path("benchmark")}" fill="none" stroke="#8b5f2b" stroke-width="3"></path>
+        ${dateTicks.map((i) => `<text x="${x(i)}" y="${h-18}" text-anchor="${i === 0 ? "start" : i === points.length - 1 ? "end" : "middle"}" font-size="12" fill="#5f676b">${esc(points[i].date)}</text>`).join("")}
+        <text x="${l}" y="18" font-size="12" fill="#315f5b">Portfolio</text>
+        <text x="${l+82}" y="18" font-size="12" fill="#8b5f2b">S&amp;P 500 TR</text>`;
+    }
+
+    function barChart(svg, rows, key = "value") {
+      const w = 720, h = 360, l = 170, r = 58, t = 24, rowH = 28;
+      const vals = rows.map((d) => num(d[key]));
+      const maxAbs = Math.max(...vals.map(Math.abs), 0.01);
+      const mid = l + (w - l - r) / 2;
+      svg.innerHTML = `<rect width="${w}" height="${h}" fill="#fbfaf6"></rect><line x1="${mid}" x2="${mid}" y1="18" y2="${h-28}" stroke="#d7d0c4"></line>` +
+        rows.slice(0, 10).map((d, i) => {
+          const y = t + i * rowH;
+          const v = num(d[key]);
+          const bw = Math.abs(v) / maxAbs * ((w - l - r) / 2);
+          const x = v < 0 ? mid - bw : mid;
+          const color = v < 0 ? "#8a2f2f" : "#315f5b";
+          return `<text x="18" y="${y+16}" font-size="12" fill="#141719">${esc(d.label || d.month)}</text><rect x="${x}" y="${y+3}" width="${bw}" height="16" fill="${color}"></rect><text x="${w-18}" y="${y+16}" text-anchor="end" font-size="12" fill="#141719">${esc(d.display ?? d.value)}</text>`;
+        }).join("");
+    }
+
+    function riskChart(svg, rows) {
+      const w = 720, h = 360, l = 60, r = 28, t = 26, b = 46;
+      const max = Math.max(...rows.map((d) => num(d.breaches)), 1);
+      const bw = (w - l - r) / Math.max(rows.length, 1) * 0.62;
+      svg.innerHTML = `<rect width="${w}" height="${h}" fill="#fbfaf6"></rect><line x1="${l}" x2="${w-r}" y1="${h-b}" y2="${h-b}" stroke="#d7d0c4"></line>` +
+        rows.map((d, i) => {
+          const cx = l + (w - l - r) * (i + 0.5) / rows.length;
+          const bh = num(d.breaches) / max * (h - t - b);
+          return `<rect x="${cx-bw/2}" y="${h-b-bh}" width="${bw}" height="${bh}" fill="#315f5b"></rect><text x="${cx}" y="${h-18}" text-anchor="middle" font-size="12" fill="#5f676b">${esc(d.month)}</text><text x="${cx}" y="${h-b-bh-6}" text-anchor="middle" font-size="12" fill="#141719">${esc(d.breaches)}</text>`;
+        }).join("");
+    }
+
+    function table(el, head, rows) {
+      el.innerHTML = `<thead><tr>${head.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+    }
+
+    function render(key) {
+      const p = byKey[key] || periods[0];
+      document.querySelector(".js-period-dates").textContent = `${p.start_date} to ${p.end_date}`;
+      document.querySelector(".js-risk-days").textContent = p.risk_total_days ? `${p.risk_total_days} trading days` : "";
+      lineChart(document.querySelector(".js-path-chart"), p.path || []);
+      table(document.querySelector(".js-record-table"), ["Measure", "Portfolio", "S&P 500 TR", "Difference"], [["TWR", fmt(p.portfolio), fmt(p.benchmark), fmt(p.excess)]]);
+      barChart(document.querySelector(".js-driver-chart"), p.drivers || []);
+      table(document.querySelector(".js-driver-table"), ["Driver", "Contribution"], (p.drivers || []).map((d) => [d.label, d.display]));
+      riskChart(document.querySelector(".js-risk-chart"), p.risk_months || []);
+      table(document.querySelector(".js-risk-table"), ["Metric", "Average", "Median", "Breach Limit", "Breach Days"], (p.risk_rows || []).map((r) => [r.metric, r.avg, r.median, r.limit, r.breach_days]));
+      document.querySelectorAll(".period-tab").forEach((b) => b.classList.toggle("active", b.dataset.period === p.key));
+    }
+
+    document.querySelectorAll(".period-tab").forEach((b) => b.addEventListener("click", () => render(b.dataset.period)));
+    render(periods[0].key);
+  })();
+  </script>
+  {{ else }}
   <section class="visual-grid">
     {{ with .Params.path_chart }}<figure><img src="{{ . }}" alt="Portfolio versus benchmark performance path"><figcaption>Portfolio vs S&amp;P 500 TR CAD</figcaption></figure>{{ end }}
     {{ with .Params.driver_chart }}<figure><img src="{{ . }}" alt="Return drivers as percent of beginning NAV"><figcaption>Return drivers, percent of beginning NAV</figcaption></figure>{{ end }}
   </section>
+  <div class="content">{{ .Content }}</div>
   {{ end }}
-
-  <div class="content">
-    {{ .Content }}
-  </div>
 </article>
 {{ end }}
