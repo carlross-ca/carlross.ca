@@ -6,7 +6,7 @@ Hugo static site for a public, personal portfolio record.
 
 - `content/performance/`: automated monthly performance records.
 - `content/notes/`: manual PM notes, quarterly or annual only when useful.
-- `content/methodology.md`: public methodology and disclosure.
+- `content/about.md`: public method and disclosure.
 
 Performance posts publish percentages only:
 

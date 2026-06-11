@@ -106,6 +106,46 @@ h2 {
 
 .lede.small { max-width: 780px; font-size: 18px; }
 
+.record-summary {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.3fr) repeat(4, minmax(130px, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.record-summary > div {
+  min-height: 82px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  display: grid;
+  align-content: space-between;
+}
+
+.record-summary span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.record-summary strong {
+  font-size: 24px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.record-summary .inception-date {
+  border: 0;
+  background: transparent;
+  padding-left: 0;
+}
+
+.record-summary .inception-date strong {
+  font-size: 30px;
+}
+
 .actions {
   margin-top: 30px;
   padding-bottom: 30px;
@@ -368,6 +408,7 @@ figcaption {
   .metric-grid div:nth-child(4n) { border-right: 0; }
   .metric-grid div:nth-last-child(-n+4) { border-bottom: 1px solid var(--line); }
   .metric-grid div:nth-last-child(-n+2) { border-bottom: 0; }
+  .record-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .split, .visual-grid, .report-pair { grid-template-columns: 1fr; }
 }
 
@@ -378,6 +419,7 @@ figcaption {
   .metric-grid div { border-right: 0; border-bottom: 1px solid var(--line); }
   .metric-grid div:last-child { border-bottom: 0; }
   .metric-grid strong { font-size: 30px; }
+  .record-summary { grid-template-columns: 1fr; }
   .list-row { display: grid; }
 }
 

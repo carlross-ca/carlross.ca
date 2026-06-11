@@ -250,13 +250,11 @@ def public_drivers(conn: sqlite3.Connection, period_key: str) -> list[dict]:
 def path_points(path: list[sqlite3.Row]) -> list[dict]:
     if not path:
         return []
-    first_equity = float(path[0]["equity_index"] or 100)
-    first_benchmark = float(path[0]["spx_tr_index_cad"] or 100)
     return [
         {
             "date": str(r["date"]),
-            "portfolio": round(float(r["equity_index"] or first_equity) / first_equity * 100, 4),
-            "benchmark": round(float(r["spx_tr_index_cad"] or first_benchmark) / first_benchmark * 100, 4),
+            "portfolio": round(float(r["equity_index"] or 100), 4),
+            "benchmark": round(float(r["spx_tr_index_cad"] or 100), 4),
         }
         for r in path
     ]

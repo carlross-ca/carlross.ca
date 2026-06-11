@@ -25,20 +25,15 @@ pagination.pagerSize = 20
     url = "/notes/"
     weight = 20
   [[menu.main]]
-    identifier = "methodology"
-    name = "Methodology"
-    url = "/methodology/"
-    weight = 30
-  [[menu.main]]
     identifier = "about"
     name = "About"
     url = "/about/"
-    weight = 40
+    weight = 30
   [[menu.main]]
     identifier = "contact"
     name = "Contact"
     url = "/contact/"
-    weight = 50
+    weight = 40
 
 [outputs]
   home = ["HTML", "RSS"]

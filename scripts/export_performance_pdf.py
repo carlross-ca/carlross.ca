@@ -12,12 +12,18 @@ from pathlib import Path
 from export_performance_records import (
     DEFAULT_DB,
     ROOT,
-    front_matter,
+    decimal,
+    drawdown,
     monthly_period_keys,
+    path_points,
     pct,
-    report_periods,
+    public_drivers,
     risk_breaches,
+    report_limit_label,
+    risk_limit_map,
+    rows,
     score,
+    signed_pct,
 )
 
 
@@ -29,6 +35,8 @@ PAPER = (0.98, 0.98, 0.96)
 ACCENT = (0.19, 0.37, 0.36)
 ACCENT2 = (0.55, 0.37, 0.17)
 BAD = (0.54, 0.18, 0.18)
+PORTFOLIO_RED = (0.71, 0.23, 0.20)
+SPX_BLUE = (0.15, 0.43, 0.54)
 
 
 def esc(value: object) -> str:
@@ -52,6 +60,10 @@ class Pdf:
     def text(self, x: float, y: float, text: object, size: int = 9, color=INK, bold: bool = False) -> None:
         font = "F2" if bold else "F1"
         self.buf.append(f"BT /{font} {size} Tf {rgb(color)} rg {x:.1f} {y:.1f} Td ({esc(text)}) Tj ET")
+
+    def centered_text(self, y: float, text: object, size: int = 9, color=INK, bold: bool = False) -> None:
+        width = len(str(text)) * size * 0.25
+        self.text(PAGE_W / 2 - width, y, text, size, color, bold)
 
     def line(self, x1: float, y1: float, x2: float, y2: float, color=LINE, width: float = 0.6) -> None:
         self.buf.append(f"{rgb(color)} RG {width:.2f} w {x1:.1f} {y1:.1f} m {x2:.1f} {y2:.1f} l S")
@@ -127,10 +139,15 @@ def table(pdf: Pdf, x: float, y: float, widths: list[float], header: list[str], 
     return y
 
 
+def section_title(pdf: Pdf, y: float, title: str, subtitle: str | None = None) -> None:
+    pdf.centered_text(y, title, 12, INK, True)
+    if subtitle:
+        pdf.centered_text(y - 13, subtitle, 8, MUTED)
+
+
 def path_chart(pdf: Pdf, x: float, y: float, w: float, h: float, period: dict) -> None:
     pts = period.get("path", [])
     pdf.rect(x, y - h, w, h, fill=PAPER)
-    pdf.text(x + 8, y - 14, f"Performance path: {period['start_date']} to {period['end_date']}", 8, INK, True)
     if not pts:
         pdf.text(x + 8, y - 34, "No path data", 8, MUTED)
         return
@@ -138,7 +155,7 @@ def path_chart(pdf: Pdf, x: float, y: float, w: float, h: float, period: dict) -
     lo, hi = min(vals), max(vals)
     pad = max((hi - lo) * 0.15, 1)
     lo, hi = lo - pad, hi + pad
-    left, right, top, bottom = x + 38, x + w - 12, y - 30, y - h + 28
+    left, right, top, bottom = x + 38, x + w - 12, y - 18, y - h + 28
 
     def xy(i: int, value: float) -> tuple[float, float]:
         px = left + (right - left) * (i / max(len(pts) - 1, 1))
@@ -149,27 +166,26 @@ def path_chart(pdf: Pdf, x: float, y: float, w: float, h: float, period: dict) -
         _, py = xy(0, value)
         pdf.line(left, py, right, py)
         pdf.text(x + 8, py - 3, f"{value:.1f}", 6, MUTED)
-    pdf.polyline([xy(i, float(p["portfolio"])) for i, p in enumerate(pts)], ACCENT)
-    pdf.polyline([xy(i, float(p["benchmark"])) for i, p in enumerate(pts)], ACCENT2)
+    pdf.polyline([xy(i, float(p["benchmark"])) for i, p in enumerate(pts)], SPX_BLUE)
+    pdf.polyline([xy(i, float(p["portfolio"])) for i, p in enumerate(pts)], PORTFOLIO_RED)
     pdf.text(left, y - h + 12, pts[0]["date"], 6, MUTED)
     pdf.text((left + right) / 2 - 18, y - h + 12, pts[len(pts) // 2]["date"], 6, MUTED)
     pdf.text(right - 42, y - h + 12, pts[-1]["date"], 6, MUTED)
-    pdf.text(left, y - 24, "Portfolio", 7, ACCENT, True)
-    pdf.text(left + 52, y - 24, "S&P 500 TR", 7, ACCENT2, True)
+    pdf.text(left, y - 12, "Portfolio", 7, PORTFOLIO_RED, True)
+    pdf.text(left + 52, y - 12, "S&P 500 TR", 7, SPX_BLUE, True)
 
 
 def driver_chart(pdf: Pdf, x: float, y: float, w: float, h: float, drivers: list[dict]) -> None:
     pdf.rect(x, y - h, w, h, fill=PAPER)
-    pdf.text(x + 8, y - 14, "NAV return drivers", 8, INK, True)
     if not drivers:
         pdf.text(x + 8, y - 34, "No driver data", 8, MUTED)
         return
     max_abs = max(abs(float(d["value"])) for d in drivers) or 0.01
     mid = x + w * 0.54
-    pdf.line(mid, y - 26, mid, y - h + 12)
+    pdf.line(mid, y - 16, mid, y - h + 12)
     row_h = min(17, (h - 38) / max(len(drivers), 1))
     for i, d in enumerate(drivers[:9]):
-        by = y - 36 - i * row_h
+        by = y - 26 - i * row_h
         v = float(d["value"])
         bw = abs(v) / max_abs * (w * 0.34)
         bx = mid - bw if v < 0 else mid
@@ -180,12 +196,11 @@ def driver_chart(pdf: Pdf, x: float, y: float, w: float, h: float, drivers: list
 
 def risk_chart(pdf: Pdf, x: float, y: float, w: float, h: float, months: list[dict]) -> None:
     pdf.rect(x, y - h, w, h, fill=PAPER)
-    pdf.text(x + 8, y - 14, "Risk breach days by month", 8, INK, True)
     if not months:
         pdf.text(x + 8, y - 34, "No risk data", 8, MUTED)
         return
     max_v = max(int(m["breaches"]) for m in months) or 1
-    left, right, bottom, top = x + 28, x + w - 14, y - h + 28, y - 30
+    left, right, bottom, top = x + 28, x + w - 14, y - h + 28, y - 18
     bw = (right - left) / max(len(months), 1) * 0.55
     pdf.line(left, bottom, right, bottom)
     for i, m in enumerate(months):
@@ -196,33 +211,196 @@ def risk_chart(pdf: Pdf, x: float, y: float, w: float, h: float, months: list[di
         pdf.text(cx - 13, y - h + 12, m["month"], 6, MUTED)
 
 
+def normalized_points(path: list[sqlite3.Row]) -> list[dict]:
+    if not path:
+        return []
+    first_equity = float(path[0]["equity_index"] or 100)
+    first_benchmark = float(path[0]["spx_tr_index_cad"] or 100)
+    return [
+        {
+            "date": str(r["date"]),
+            "portfolio": round(float(r["equity_index"] or first_equity) / first_equity * 100, 4),
+            "benchmark": round(float(r["spx_tr_index_cad"] or first_benchmark) / first_benchmark * 100, 4),
+        }
+        for r in path
+    ]
+
+
+def score_from_path(period_key: str, label: str, path: list[sqlite3.Row], raw_index: bool = False) -> dict | None:
+    if not path:
+        return None
+    first, last = path[0], path[-1]
+    first_equity = float(first["equity_index"] or 100)
+    first_benchmark = float(first["spx_tr_index_cad"] or 100)
+    portfolio = float(last["equity_index"] or first_equity) / first_equity - 1
+    benchmark = float(last["spx_tr_index_cad"] or first_benchmark) / first_benchmark - 1
+    return {
+        "period_key": period_key,
+        "label": label,
+        "start_date": first["date"],
+        "end_date": last["date"],
+        "portfolio": pct(portfolio),
+        "benchmark": pct(benchmark),
+        "excess": signed_pct(portfolio - benchmark),
+        "path": path_points(path) if raw_index else normalized_points(path),
+    }
+
+
+def asof_path(conn: sqlite3.Connection, end_date: str, row_limit: int | None) -> list[sqlite3.Row]:
+    args: tuple = (end_date,) if row_limit is None else (end_date, row_limit)
+    limit_sql = "" if row_limit is None else "LIMIT ?"
+    found = rows(
+        conn,
+        f"""
+        SELECT *
+        FROM fact_performance_paths_daily
+        WHERE period_key='since_inception'
+          AND date <= ?
+        ORDER BY date DESC
+        {limit_sql}
+        """,
+        args,
+    )
+    return list(reversed(found))
+
+
+def asof_payload(conn: sqlite3.Connection, label: str, path: list[sqlite3.Row], driver_key: str, risk_key: str, raw_index: bool = False) -> dict | None:
+    raw = raw_index or bool(path and path[0]["date"] == "2026-05-01")
+    payload = score_from_path(label.lower().replace(" ", "_"), label, path, raw)
+    if payload is None:
+        return None
+    payload["drivers"] = [
+        {"label": d["label"], "value": round(float(d["value"]), 6), "display": signed_pct(d["value"])}
+        for d in public_drivers(conn, driver_key)
+    ]
+    payload["risk_rows"] = risk_rows_between(conn, payload["start_date"], payload["end_date"])
+    payload["risk_months"] = risk_months_between(conn, payload["start_date"], payload["end_date"])
+    days = sorted({int(r["total_days"]) for r in payload["risk_rows"] if r.get("total_days") is not None})
+    payload["risk_total_days"] = days[0] if len(days) == 1 else None
+    return payload
+
+
+def risk_daily_between(conn: sqlite3.Connection, start_date: str, end_date: str) -> list[sqlite3.Row]:
+    return rows(
+        conn,
+        """
+        SELECT *
+        FROM v_report_risk_daily
+        WHERE period_key='since_inception'
+          AND date BETWEEN ? AND ?
+        ORDER BY date
+        """,
+        (start_date, end_date),
+    )
+
+
+def risk_rows_between(conn: sqlite3.Connection, start_date: str, end_date: str) -> list[dict]:
+    metric_defs = [
+        ("asset_delta", "Asset Delta / AUM", "breach_delta"),
+        ("asset_gamma", "Asset Gamma / AUM", "breach_gamma"),
+        ("net_vega", "P&L per +10 IV / AUM", "breach_vega"),
+        ("net_theta", "Annual Theta / AUM", "breach_theta"),
+        ("margin_power", "Margin Cushion / AUM", "breach_margin"),
+        ("open_contracts", "Contracts", "breach_open_contracts"),
+        ("rolling_30d_buy_sell_count", "30d Trade Count", "breach_trade_count"),
+        ("vix", "VIX", "breach_vix"),
+    ]
+    daily = risk_daily_between(conn, start_date, end_date)
+    limits = risk_limit_map(conn)
+    out = []
+    for key, label, breach_key in metric_defs:
+        values = sorted(float(r[key]) for r in daily if r[key] is not None)
+        if not values:
+            continue
+        n = len(values)
+        median = values[n // 2] if n % 2 else (values[n // 2 - 1] + values[n // 2]) / 2
+        breach_days = sum(int(r[breach_key] or 0) for r in daily if breach_key in r.keys() and r[key] is not None)
+        out.append({
+            "metric": label,
+            "avg": decimal(sum(values) / n),
+            "median": decimal(median),
+            "limit": report_limit_label(key, limits),
+            "breach_days": breach_days,
+            "total_days": n,
+        })
+    return out
+
+
+def risk_months_between(conn: sqlite3.Connection, start_date: str, end_date: str) -> list[dict]:
+    info = rows(conn, "PRAGMA table_info(v_report_risk_daily)")
+    breach_cols = [r["name"] for r in info if str(r["name"]).startswith("breach_")]
+    if not breach_cols:
+        return []
+    expr = " + ".join(f"COALESCE({c},0)" for c in breach_cols)
+    found = rows(
+        conn,
+        f"""
+        SELECT SUBSTR(date,1,7) AS month, SUM({expr}) AS breaches
+        FROM v_report_risk_daily
+        WHERE period_key='since_inception'
+          AND date BETWEEN ? AND ?
+        GROUP BY SUBSTR(date,1,7)
+        ORDER BY month
+        """,
+        (start_date, end_date),
+    )
+    return [{"month": r["month"], "breaches": int(r["breaches"] or 0)} for r in found]
+
+
+def pdf_report_periods(conn: sqlite3.Connection, month_key: str) -> list[dict]:
+    month = score(conn, month_key)
+    if month is None:
+        return []
+    end_date = month["last_date"]
+    month_payload = asof_payload(conn, "Trailing 1 Month", month["path"], month_key, month_key, True)
+    if month_payload is not None:
+        month_payload["portfolio"] = pct(month["portfolio"])
+        month_payload["benchmark"] = pct(month["benchmark"])
+        month_payload["excess"] = signed_pct(month["excess"])
+    requested = [
+        month_payload,
+        asof_payload(conn, "Trailing 3 Months", asof_path(conn, end_date, 63), month_key, month_key),
+        asof_payload(conn, "Trailing 12 Months", asof_path(conn, end_date, 252), month_key, month_key),
+        asof_payload(conn, "Since Inception", asof_path(conn, end_date, None), month_key, month_key),
+    ]
+    return [p for p in requested if p is not None]
+
+
 def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
     pdf = Pdf()
+    pdf.page()
+    pdf.centered_text(430, title, 26, INK, True)
+    pdf.centered_text(398, "CAD time-weighted", 12, MUTED)
+    pdf.centered_text(374, "carlross.ca", 11, MUTED)
+
     for p in periods:
         pdf.page()
-        pdf.text(42, 750, title, 20, INK, True)
-        pdf.text(42, 730, f"{p['label']} | {p['start_date']} to {p['end_date']} | CAD time-weighted", 10, MUTED)
+        pdf.centered_text(750, p["label"], 18, INK, True)
+        pdf.centered_text(728, f"Beg Date: {p['start_date']}    End Date: {p['end_date']}", 10, MUTED)
         pdf.line(42, 718, 570, 718)
 
-        path_chart(pdf, 42, 700, 318, 155, p)
-        table(pdf, 374, 700, [52, 54, 58], ["Portfolio", "S&P TR", "Diff"], [[p["portfolio"], p["benchmark"], p["excess"]]], 18)
+        section_title(pdf, 696, "Performance Path")
+        path_chart(pdf, 42, 678, 318, 145, p)
+        table(pdf, 374, 626, [52, 54, 58], ["Portfolio", "S&P TR", "Diff"], [[p["portfolio"], p["benchmark"], p["excess"]]], 18)
 
-        driver_chart(pdf, 42, 520, 318, 155, p.get("drivers", []))
+        section_title(pdf, 498, "NAV Return Drivers")
+        driver_chart(pdf, 42, 480, 318, 145, p.get("drivers", []))
         table(
             pdf,
             374,
-            520,
+            454,
             [98, 66],
             ["Driver", "Contribution"],
             [[d["label"], d["display"]] for d in p.get("drivers", [])[:8]],
             15,
         )
 
-        risk_chart(pdf, 42, 340, 238, 150, p.get("risk_months", []))
+        section_title(pdf, 300, "Risk Breach Days by Month", "custom personal risk framework for daily monitoring")
+        risk_chart(pdf, 42, 270, 238, 140, p.get("risk_months", []))
         table(
             pdf,
             292,
-            340,
+            278,
             [76, 38, 38, 54, 32],
             ["Metric", "Avg", "Median", "Limit", "Breaches"],
             [[r["metric"], r["avg"], r["median"], r["limit"], r["breach_days"]] for r in p.get("risk_rows", [])],
@@ -238,35 +416,20 @@ def period_key_for_previous_month(today: date) -> str:
     if month == 0:
         year -= 1
         month = 12
-    return f"{date(year, month, 1).strftime("%b").lower()}_{year}"
-
-
-def write_record_page(root: Path, period_key: str, front: dict) -> None:
-    suffix = period_key.replace("month_", "").replace("_", "-")
-    pdf_url = f"/reports/performance/{suffix}-performance-record.pdf"
-    front = dict(front)
-    front["pdf_url"] = pdf_url
-    body = f"""{front_matter(front)}
-
-Open the frozen PDF record:
-
-[Download performance record PDF]({pdf_url})
-"""
-    post_path = root / "content" / "performance" / f"{suffix}.md"
-    post_path.parent.mkdir(parents=True, exist_ok=True)
-    post_path.write_text(body, encoding="utf-8")
+    return f"{date(year, month, 1).strftime('%b').lower()}_{year}"
 
 
 def write_one(conn: sqlite3.Connection, root: Path, period_key: str) -> dict:
     month = score(conn, period_key)
     if month is None:
         raise SystemExit(f"No data for {period_key}")
-    periods = report_periods(conn, period_key)
+    periods = pdf_report_periods(conn, period_key)
     suffix = period_key.replace("month_", "").replace("_", "-")
     pdf_url = f"/reports/performance/{suffix}-performance-record.pdf"
     pdf_path = root / "static" / pdf_url.lstrip("/")
     title = f"{month['display_name']} Performance Record"
     write_pdf(pdf_path, title, periods)
+    current_dd, max_dd = drawdown(conn)
     front = {
         "title": title,
         "date": f"{month['last_date']}T08:00:00-07:00",
@@ -275,17 +438,17 @@ def write_one(conn: sqlite3.Connection, root: Path, period_key: str) -> dict:
         "portfolio_1m": periods[0]["portfolio"] if periods else pct(month["portfolio"]),
         "benchmark_1m": periods[0]["benchmark"] if periods else pct(month["benchmark"]),
         "excess_1m": periods[0]["excess"] if periods else "n/a",
-        "portfolio_3m": next((p["portfolio"] for p in periods if p["label"] == "3M"), "n/a"),
-        "portfolio_12m": next((p["portfolio"] for p in periods if p["label"] == "12M"), "n/a"),
+        "portfolio_3m": next((p["portfolio"] for p in periods if p["label"] == "Trailing 3 Months"), "n/a"),
+        "portfolio_12m": next((p["portfolio"] for p in periods if p["label"] == "Trailing 12 Months"), "n/a"),
         "portfolio_since_inception": next((p["portfolio"] for p in periods if p["label"] == "Since Inception"), "n/a"),
         "benchmark_since_inception": next((p["benchmark"] for p in periods if p["label"] == "Since Inception"), "n/a"),
-        "max_drawdown": "n/a",
+        "current_drawdown": pct(current_dd),
+        "max_drawdown": pct(max_dd),
         "risk_breach_days": "n/a" if risk_breaches(conn, period_key) is None else str(risk_breaches(conn, period_key)),
         "pdf_url": pdf_url,
         "tags": ["performance"],
         "summary": f"PDF public performance record for {month['display_name']}.",
     }
-    write_record_page(root, period_key, front)
     return front
 
 

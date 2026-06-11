@@ -5,25 +5,30 @@ draft: false
 summary: "About this public portfolio record."
 ---
 
-## What this is
-
 This site is my public portfolio record. I document a personal portfolio using ETFs and options.
 
 The portfolio is run from British Columbia, Canada, with my own capital. I do not manage client assets, accept outside capital, or provide investment advice through this site.
 
 ## The Record
 
-The public record shows time-weighted returns, benchmark comparison, drawdown, risk breaches, and return drivers as percentages.
+The public record shows:
 
-## Why
+- Portfolio time-weighted return
+- S&P 500 Total Return benchmark in CAD
+- Difference versus benchmark
+- Drawdown
+- Risk breach days
+- Return drivers as percent of beginning NAV
 
-The goal is to make the process legible.
+Returns are CAD-based and time-weighted. External cash flows are separated from performance so the return record reflects portfolio results.
 
-The automated record keeps me honest because every month uses the same format. Manual notes are separate, and only worth writing when there is judgment to add.
+Performance records are monthly and automated after reporting checks pass. Each monthly record includes 1 month, trailing 3 month, trailing 12 month, and since-inception figures. Quarter-end and year-end performance are therefore embedded in the monthly record.
 
 ## Method
 
-The portfolio uses ETFs as the base and options selectively when the risk/reward is worth documenting. Monthly performance records are generated from the reporting database after checks pass.
+The portfolio uses ETFs as the base and options selectively when the risk/reward is worth documenting.
+
+The goal is to make the process legible. The automated record keeps me honest because every month uses the same format. Manual PM notes are separate and optional, only worth writing when there is judgment to add.
 
 ## Risk
 
