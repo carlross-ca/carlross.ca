@@ -14,6 +14,8 @@
   "benchmark_since_inception": "6.61%",
   "current_drawdown": "0.00%",
   "max_drawdown": "-1.46%",
+  "benchmark_current_drawdown": "0.00%",
+  "benchmark_max_drawdown": "-1.71%",
   "risk_breach_days": "65",
   "pdf_url": "/reports/performance/may-2026-performance-record.pdf",
   "tags": [
