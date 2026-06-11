@@ -108,7 +108,7 @@ h2 {
 
 .record-summary {
   display: grid;
-  grid-template-columns: minmax(220px, 1.3fr) repeat(4, minmax(130px, 1fr));
+  grid-template-columns: minmax(220px, 0.9fr) repeat(3, minmax(130px, 1fr));
   gap: 12px;
   margin-top: 24px;
 }
@@ -140,6 +140,7 @@ h2 {
   border: 0;
   background: transparent;
   padding-left: 0;
+  grid-row: span 2;
 }
 
 .record-summary .inception-date strong {

@@ -418,6 +418,27 @@ def drawdown_asof(conn: sqlite3.Connection, end_date: str) -> tuple[float | None
     return found["current_dd"], found["max_dd"]
 
 
+def benchmark_drawdown_asof(conn: sqlite3.Connection, end_date: str) -> tuple[float | None, float | None]:
+    found = conn.execute(
+        """
+        SELECT
+          (SELECT spx_tr_drawdown_cad
+           FROM fact_performance_paths_daily
+           WHERE period_key='since_inception' AND date <= ?
+           ORDER BY date DESC
+           LIMIT 1) AS current_dd,
+          MIN(spx_tr_drawdown_cad) AS max_dd
+        FROM fact_performance_paths_daily
+        WHERE period_key='since_inception'
+          AND date <= ?
+        """,
+        (end_date, end_date),
+    ).fetchone()
+    if found is None:
+        return None, None
+    return found["current_dd"], found["max_dd"]
+
+
 def write_one(conn: sqlite3.Connection, root: Path, period_key: str) -> dict:
     month = score(conn, period_key)
     if month is None:
@@ -429,6 +450,7 @@ def write_one(conn: sqlite3.Connection, root: Path, period_key: str) -> dict:
     title = f"{month['display_name']} Performance Record"
     write_pdf(pdf_path, title, periods)
     current_dd, max_dd = drawdown_asof(conn, month["last_date"])
+    benchmark_current_dd, benchmark_max_dd = benchmark_drawdown_asof(conn, month["last_date"])
     front = {
         "title": title,
         "date": f"{month['last_date']}T08:00:00-07:00",
@@ -445,6 +467,8 @@ def write_one(conn: sqlite3.Connection, root: Path, period_key: str) -> dict:
         "benchmark_since_inception": next((p["benchmark"] for p in periods if p["label"] == "Since Inception"), "n/a"),
         "current_drawdown": pct(current_dd),
         "max_drawdown": pct(max_dd),
+        "benchmark_current_drawdown": pct(benchmark_current_dd),
+        "benchmark_max_drawdown": pct(benchmark_max_dd),
         "risk_breach_days": "n/a" if risk_breaches(conn, period_key) is None else str(risk_breaches(conn, period_key)),
         "pdf_url": pdf_url,
         "tags": ["performance"],
