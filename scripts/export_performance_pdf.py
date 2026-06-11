@@ -121,18 +121,18 @@ class Pdf:
         path.write_bytes(out)
 
 
-def table(pdf: Pdf, x: float, y: float, widths: list[float], header: list[str], rows: list[list[object]], row_h: float = 15) -> float:
+def table(pdf: Pdf, x: float, y: float, widths: list[float], header: list[str], rows: list[list[object]], row_h: float = 15, size: int = 7) -> float:
     pdf.rect(x, y - row_h, sum(widths), row_h, fill=PAPER)
     cx = x
     for w, h in zip(widths, header):
-        pdf.text(cx + 4, y - 10, h, 7, MUTED, True)
+        pdf.text(cx + 4, y - 10, h, size, MUTED, True)
         cx += w
     y -= row_h
     for row in rows:
         pdf.line(x, y, x + sum(widths), y)
         cx = x
         for w, cell in zip(widths, row):
-            pdf.text(cx + 4, y - 10, cell, 7, INK)
+            pdf.text(cx + 4, y - 10, cell, size, INK)
             cx += w
         y -= row_h
     pdf.rect(x, y, sum(widths), row_h * (len(rows) + 1))
@@ -372,18 +372,19 @@ def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
             15,
         )
 
-        section_title(pdf, 300, "Risk Breach Days by Month", "custom personal risk framework for daily monitoring")
-        risk_chart(pdf, 42, 270, 238, 140, p.get("risk_months", []))
+        section_title(pdf, 300, "Risk Breach Days by Month", "custom personal risk framework for daily monitoring. Goal: < 10 per month")
+        risk_chart(pdf, 42, 270, 214, 140, p.get("risk_months", []))
         table(
             pdf,
-            292,
-            278,
-            [76, 38, 38, 54, 32],
+            268,
+            264,
+            [84, 40, 42, 66, 46],
             ["Metric", "Avg", "Median", "Limit", "Breaches"],
             [[r["metric"], r["avg"], r["median"], r["limit"], r["breach_days"]] for r in p.get("risk_rows", [])],
             13,
+            6,
         )
-        pdf.text(42, 36, "Frozen public record. Source: reporting database export.", 7, MUTED)
+        pdf.centered_text(36, f"carlross.ca | {title}", 7, MUTED)
     pdf.save(path)
 
 
