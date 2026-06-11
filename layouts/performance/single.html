@@ -145,11 +145,50 @@
   })();
   </script>
   {{ else }}
-  <section class="visual-grid">
-    {{ with .Params.path_chart }}<figure><img src="{{ . }}" alt="Portfolio versus benchmark performance path"><figcaption>Portfolio vs S&amp;P 500 TR CAD</figcaption></figure>{{ end }}
-    {{ with .Params.driver_chart }}<figure><img src="{{ . }}" alt="Return drivers as percent of beginning NAV"><figcaption>Return drivers, percent of beginning NAV</figcaption></figure>{{ end }}
+  <section class="report-section">
+    <div class="section-head">
+      <h2>Performance</h2>
+      <span class="muted">{{ .Date.Format "2006-01-02" }}</span>
+    </div>
+    <div class="report-pair">
+      {{ with .Params.path_chart }}<figure class="report-figure"><img src="{{ . }}" alt="Portfolio versus benchmark performance path"><figcaption>Portfolio vs S&amp;P 500 TR CAD.</figcaption></figure>{{ end }}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Measure</th><th>Portfolio</th><th>S&amp;P 500 TR</th><th>Difference</th></tr></thead>
+          <tbody>
+            <tr><td>1M</td><td>{{ .Params.portfolio_1m | default "n/a" }}</td><td>{{ .Params.benchmark_1m | default "n/a" }}</td><td>{{ .Params.excess_1m | default "n/a" }}</td></tr>
+            <tr><td>3M</td><td>{{ .Params.portfolio_3m | default "n/a" }}</td><td>{{ .Params.benchmark_3m | default "n/a" }}</td><td>{{ .Params.excess_3m | default "n/a" }}</td></tr>
+            <tr><td>12M</td><td>{{ .Params.portfolio_12m | default "n/a" }}</td><td>{{ .Params.benchmark_12m | default "n/a" }}</td><td>{{ .Params.excess_12m | default "n/a" }}</td></tr>
+            <tr><td>Since inception</td><td>{{ .Params.portfolio_since_inception | default "n/a" }}</td><td>{{ .Params.benchmark_since_inception | default "n/a" }}</td><td>{{ .Params.excess_since_inception | default "n/a" }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </section>
-  <div class="content">{{ .Content }}</div>
+
+  <section class="report-section">
+    <div class="section-head">
+      <h2>NAV Return Drivers</h2>
+      <span class="muted">Percent of beginning NAV</span>
+    </div>
+    <div class="report-pair">
+      {{ with .Params.driver_chart }}<figure class="report-figure"><img src="{{ . }}" alt="Return drivers as percent of beginning NAV"></figure>{{ end }}
+      <div class="content">
+        {{ $content := .Content }}
+        {{ replaceRE `(?s).*?(<h2 id="nav-change-drivers">NAV Change Drivers</h2>.*?)(<h2 id="risk">Risk</h2>.*)` "$1" $content | safeHTML }}
+      </div>
+    </div>
+  </section>
+
+  <section class="report-section">
+    <div class="section-head">
+      <h2>Risk Metrics</h2>
+      <span class="muted"></span>
+    </div>
+    <div class="content">
+      {{ replaceRE `(?s).*?(<h2 id="risk-metrics">Risk Metrics</h2>.*)` "$1" .Content | safeHTML }}
+    </div>
+  </section>
   {{ end }}
 </article>
 {{ end }}
