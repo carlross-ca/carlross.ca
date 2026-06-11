@@ -18,8 +18,6 @@ Performance posts publish percentages only:
 - risk breach days
 - two visuals
 
-They do not publish NAV dollars, net P&L dollars, deposits, withdrawals, or account balances.
-
 ## Export Monthly Performance
 
 On the VPS, from the site directory:
@@ -27,6 +25,8 @@ On the VPS, from the site directory:
 ```bash
 python3 scripts/export_performance_records.py --db /home/trader/trading/composite.db --site /home/trader/carlross.ca
 ```
+
+By default, this exports every monthly performance period in the reporting database.
 
 For a specific period:
 

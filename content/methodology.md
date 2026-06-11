@@ -5,11 +5,7 @@ draft: false
 summary: "How the public portfolio record is presented."
 ---
 
-## Public Rule
-
-I publish percentage returns and risk context, not wealth.
-
-Public:
+## Public Record
 
 - Portfolio TWR
 - Benchmark TWR
@@ -18,18 +14,11 @@ Public:
 - Risk breach days
 - Return drivers as percent of beginning NAV
 
-Private:
-
-- NAV dollars
-- Net P&L dollars
-- Deposits and withdrawals
-- Account balances
-
 ## Return Basis
 
 Returns are time-weighted, CAD-based, and compared against the S&P 500 Total Return index translated into CAD where available in the reporting database.
 
-External cash flows are separated from performance so deposits and withdrawals do not flatter or punish the return record.
+External cash flows are separated from performance so the return record reflects portfolio results.
 
 ## Publishing Cadence
 

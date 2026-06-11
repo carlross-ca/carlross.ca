@@ -80,21 +80,20 @@ def score(conn: sqlite3.Connection, period_key: str) -> dict | None:
     }
 
 
-def latest_month_key(conn: sqlite3.Connection) -> str:
-    found = row(
+def monthly_period_keys(conn: sqlite3.Connection) -> list[str]:
+    found = rows(
         conn,
         """
         SELECT period_key
         FROM fact_performance_paths_daily
         WHERE period_type='month'
         GROUP BY period_key
-        ORDER BY MAX(date) DESC
-        LIMIT 1
+        ORDER BY MIN(date)
         """,
     )
-    if found is None:
+    if not found:
         raise SystemExit("No monthly performance period found.")
-    return str(found["period_key"])
+    return [str(r["period_key"]) for r in found]
 
 
 def risk_breaches(conn: sqlite3.Connection, period_key: str) -> int | None:
@@ -247,7 +246,7 @@ def svg_driver_chart(drivers: list[dict], out: Path) -> None:
         f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" role="img">
   <rect width="{width}" height="{height}" fill="#fbfaf6"/>
   <text x="64" y="38" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#141719">Return Drivers</text>
-  <text x="64" y="62" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5f676b">Percent of beginning NAV. No dollar values.</text>
+  <text x="64" y="62" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5f676b">Percent of beginning NAV</text>
   <line x1="330" y1="82" x2="330" y2="370" stroke="#d7d0c4" stroke-width="1"/>
   {''.join(bars)}
 </svg>
@@ -325,7 +324,7 @@ def write_record(conn: sqlite3.Connection, period_key: str, root: Path) -> dict:
 
 ## NAV Change Drivers
 
-Percent of beginning NAV. Dollar values are intentionally excluded.
+Percent of beginning NAV.
 
 | Driver | Contribution |
 | --- | ---: |
@@ -345,7 +344,6 @@ Percent of beginning NAV. Dollar values are intentionally excluded.
 | --- | ---: | ---: | ---: |
 {risk_lines}
 
-No NAV dollars, net P&L dollars, deposits, withdrawals, or account balances are included.
 """
     post_path = root / "content" / "performance" / f"{suffix}.md"
     post_path.write_text(body, encoding="utf-8")
@@ -362,12 +360,13 @@ def main() -> None:
     conn = sqlite3.connect(f"file:{args.db}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
     try:
-        period_key = args.period_key or latest_month_key(conn)
-        record = write_record(conn, period_key, args.site)
+        period_keys = [args.period_key] if args.period_key else monthly_period_keys(conn)
+        records = [write_record(conn, period_key, args.site) for period_key in period_keys]
+        record = records[-1]
         data_path = args.site / "data" / "latest_performance.json"
         data_path.parent.mkdir(parents=True, exist_ok=True)
         data_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
-        print(f"wrote {record['title']}")
+        print(f"wrote {len(records)} performance record(s)")
     finally:
         conn.close()
 

@@ -11,15 +11,13 @@ This site is my public portfolio record. I document a personal portfolio using E
 
 The portfolio is run from British Columbia, Canada, with my own capital. I do not manage client assets, accept outside capital, or provide investment advice through this site.
 
-## The Rule
+## The Record
 
-The public record shows returns and risk, not wealth.
-
-I publish time-weighted returns, benchmark comparison, drawdown, risk breaches, and return drivers as percentages. I do not publish NAV dollars, net P&L dollars, deposits, withdrawals, or account balances.
+The public record shows time-weighted returns, benchmark comparison, drawdown, risk breaches, and return drivers as percentages.
 
 ## Why
 
-The goal is not to advertise performance. The goal is to make the process legible.
+The goal is to make the process legible.
 
 The automated record keeps me honest because every month uses the same format. Manual notes are separate, and only worth writing when there is judgment to add.
 
