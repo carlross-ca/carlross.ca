@@ -2,39 +2,35 @@
 title: "About"
 date: 2026-05-01
 draft: false
-summary: "About this personal investing journal."
+summary: "About this public portfolio record."
 ---
 
 ## What this is
 
-This site is my personal investing journal. I document a personal portfolio using ETFs and options, with monthly notes on process, risk, mistakes, and results.
+This site is my public portfolio record. I document a personal portfolio using ETFs and options.
 
 The portfolio is run from Vernon, British Columbia, with my own capital. I do not manage client assets, accept outside capital, or provide investment advice through this site.
 
-## What I am trying to learn
+## The Rule
 
-The project is simple: run a real-money portfolio in a disciplined way and make the learning visible. Each month I want to answer a few basic questions:
+The public record shows returns and risk, not wealth.
 
-- What did I do?
-- Why did I do it?
-- Did I follow my own process?
-- What risk did I take?
-- What worked, what did not, and what should change?
+I publish time-weighted returns, benchmark comparison, drawdown, risk breaches, and return drivers as percentages. I do not publish NAV dollars, net P&L dollars, deposits, withdrawals, or account balances.
 
-The portfolio uses ETFs as the core building blocks and options when the risk/reward looks worth documenting. The goal is not to make every month look good. The goal is to build a clear record of decisions, risk management, mistakes, and results over time.
+## Why
 
-## How I write about it
+The goal is not to advertise performance. The goal is to make the process legible.
 
-Monthly notes are written for people who are interested in process. I may include simple return figures, benchmarks, and drawdown context, but the point is not to advertise performance. The point is to make the work legible.
+The automated record keeps me honest because every month uses the same format. Manual notes are separate, and only worth writing when there is judgment to add.
 
-I care more about whether the process is repeatable than whether a given month flatters the portfolio.
+## Method
+
+The portfolio uses ETFs as the base and options selectively when the risk/reward is worth documenting. Monthly performance records are generated from the reporting database after checks pass.
+
+The format is GIPS-inspired, but this is not a GIPS-compliant presentation.
 
 ## Risk
 
-Options can create losses quickly, especially when margin is involved. Short-option and volatility-income trades can look steady for long stretches and then become uncomfortable very fast. I treat that as a central feature of the work, not a footnote.
-
-For that reason, each monthly note tries to include some context on exposure, drawdown, discipline, and what I would do differently.
-
-## What this is not
+Options can create losses quickly, especially when margin is involved. Short-option and volatility-income trades can look steady for long stretches and then become uncomfortable very fast.
 
 This is not investment advice, an offer to sell securities, or a solicitation to manage money. It is a public notebook about my own portfolio.

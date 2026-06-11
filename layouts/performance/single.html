@@ -1,0 +1,31 @@
+{{ define "main" }}
+<article class="article performance-record">
+  <header class="article-head">
+    <p class="eyebrow">Automated performance record</p>
+    <h1>{{ .Title }}</h1>
+    <p class="muted">CAD. Time-weighted. Public-safe.</p>
+  </header>
+
+  <section class="metric-grid wide">
+    <div><span>1M Portfolio</span><strong>{{ .Params.portfolio_1m | default "n/a" }}</strong></div>
+    <div><span>1M Benchmark</span><strong>{{ .Params.benchmark_1m | default "n/a" }}</strong></div>
+    <div><span>1M Difference</span><strong>{{ .Params.excess_1m | default "n/a" }}</strong></div>
+    <div><span>Max Drawdown</span><strong>{{ .Params.max_drawdown | default "n/a" }}</strong></div>
+    <div><span>3M Portfolio</span><strong>{{ .Params.portfolio_3m | default "n/a" }}</strong></div>
+    <div><span>12M Portfolio</span><strong>{{ .Params.portfolio_12m | default "n/a" }}</strong></div>
+    <div><span>Since Inception</span><strong>{{ .Params.portfolio_since_inception | default "n/a" }}</strong></div>
+    <div><span>Risk Breach Days</span><strong>{{ .Params.risk_breach_days | default "n/a" }}</strong></div>
+  </section>
+
+  {{ if or .Params.path_chart .Params.driver_chart }}
+  <section class="visual-grid">
+    {{ with .Params.path_chart }}<figure><img src="{{ . }}" alt="Portfolio versus benchmark performance path"><figcaption>Portfolio vs S&amp;P 500 TR CAD</figcaption></figure>{{ end }}
+    {{ with .Params.driver_chart }}<figure><img src="{{ . }}" alt="Return drivers as percent of beginning NAV"><figcaption>Return drivers, percent of beginning NAV</figcaption></figure>{{ end }}
+  </section>
+  {{ end }}
+
+  <div class="content">
+    {{ .Content }}
+  </div>
+</article>
+{{ end }}

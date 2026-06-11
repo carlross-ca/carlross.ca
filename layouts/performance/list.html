@@ -1,0 +1,35 @@
+{{ define "main" }}
+<section class="article-head">
+  <p class="eyebrow">Public record</p>
+  <h1>Performance</h1>
+  <p class="lede small">Automated monthly records. Returns are percentages. Dollar NAV, net P&amp;L, deposits, withdrawals, and balances stay private.</p>
+</section>
+<div class="table-wrap">
+  <table class="archive-table">
+    <thead>
+      <tr>
+        <th>Month</th>
+        <th>1M</th>
+        <th>3M</th>
+        <th>12M</th>
+        <th>Since Inc.</th>
+        <th>Max DD</th>
+        <th>Breaches</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{ range .Pages }}
+      <tr>
+        <td><a href="{{ .RelPermalink }}">{{ .Params.month_covered | default .Title }}</a></td>
+        <td>{{ .Params.portfolio_1m | default "n/a" }}</td>
+        <td>{{ .Params.portfolio_3m | default "n/a" }}</td>
+        <td>{{ .Params.portfolio_12m | default "n/a" }}</td>
+        <td>{{ .Params.portfolio_since_inception | default "n/a" }}</td>
+        <td>{{ .Params.max_drawdown | default "n/a" }}</td>
+        <td>{{ .Params.risk_breach_days | default "n/a" }}</td>
+      </tr>
+      {{ end }}
+    </tbody>
+  </table>
+</div>
+{{ end }}

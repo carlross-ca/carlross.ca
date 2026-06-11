@@ -1,7 +1,6 @@
 baseURL = "https://carlross.ca/"
 languageCode = "en-ca"
-title = "Carl Ross Investing Journal"
-theme = "PaperMod"
+title = "Carl Ross"
 enableRobotsTXT = true
 enableEmoji = false
 buildFuture = true
@@ -10,41 +9,36 @@ pagination.pagerSize = 20
 
 [params]
   author = "Carl Ross"
-  description = "A personal investing journal about ETFs, options, process, risk, mistakes, and results."
+  description = "A public performance record for a personal portfolio."
   defaultTheme = "light"
-  disableThemeToggle = false
-  ShowReadingTime = true
-  ShowShareButtons = false
-  ShowPostNavLinks = true
-  ShowBreadCrumbs = false
-  ShowCodeCopyButtons = false
-  ShowWordCount = false
-  ShowRssButtonInSectionTermList = true
-  DisableScrollToTop = true
   hideFooter = false
-  disableSpecial1stPost = true
-  assets.disableFingerprinting = false
-  assets.disableHLJS = true
-
-  [params.homeInfoParams]
-    Title = ""
-    Content = """
-I document a personal portfolio using ETFs and options, with monthly notes on process, risk, mistakes, and results.
-
-This is a personal investing journal, not investment advice or an offer to manage money.
-"""
 
 [menu]
+  [[menu.main]]
+    identifier = "performance"
+    name = "Performance"
+    url = "/performance/"
+    weight = 10
+  [[menu.main]]
+    identifier = "notes"
+    name = "Notes"
+    url = "/notes/"
+    weight = 20
+  [[menu.main]]
+    identifier = "methodology"
+    name = "Methodology"
+    url = "/methodology/"
+    weight = 30
   [[menu.main]]
     identifier = "about"
     name = "About"
     url = "/about/"
-    weight = 10
+    weight = 40
   [[menu.main]]
     identifier = "contact"
     name = "Contact"
     url = "/contact/"
-    weight = 20
+    weight = 50
 
 [outputs]
   home = ["HTML", "RSS"]

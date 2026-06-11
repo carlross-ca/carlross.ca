@@ -1,0 +1,319 @@
+#!/usr/bin/env python3
+"""Export public-safe performance records from the trading SQLite DB to Hugo."""
+
+from __future__ import annotations
+
+import argparse
+import html
+import json
+import sqlite3
+from pathlib import Path
+
+
+DEFAULT_DB = Path("/home/trader/trading/composite.db")
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def pct(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    return f"{value * 100:.2f}%"
+
+
+def signed_pct(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    sign = "+" if value > 0 else ""
+    return f"{sign}{value * 100:.2f}%"
+
+
+def front_matter(data: dict) -> str:
+    lines = ["---"]
+    for key, value in data.items():
+        if isinstance(value, bool):
+            lines.append(f"{key}: {'true' if value else 'false'}")
+        elif isinstance(value, list):
+            lines.append(f"{key}:")
+            for item in value:
+                lines.append(f"  - {item}")
+        else:
+            safe = str(value).replace('"', '\\"')
+            lines.append(f'{key}: "{safe}"')
+    lines.append("---")
+    return "\n".join(lines)
+
+
+def rows(conn: sqlite3.Connection, sql: str, args: tuple = ()) -> list[sqlite3.Row]:
+    return list(conn.execute(sql, args))
+
+
+def row(conn: sqlite3.Connection, sql: str, args: tuple = ()) -> sqlite3.Row | None:
+    return conn.execute(sql, args).fetchone()
+
+
+def score(conn: sqlite3.Connection, period_key: str) -> dict | None:
+    path = rows(
+        conn,
+        """
+        SELECT *
+        FROM fact_performance_paths_daily
+        WHERE period_key=?
+        ORDER BY date
+        """,
+        (period_key,),
+    )
+    if not path:
+        return None
+    first, last = path[0], path[-1]
+    portfolio = float(last["equity_index"] or 100) / 100 - 1
+    benchmark = float(last["spx_tr_index_cad"] or 100) / 100 - 1
+    return {
+        "period_key": period_key,
+        "display_name": first["display_name"],
+        "period_type": first["period_type"],
+        "first_date": first["date"],
+        "last_date": last["date"],
+        "portfolio": portfolio,
+        "benchmark": benchmark,
+        "excess": portfolio - benchmark,
+        "path": path,
+    }
+
+
+def latest_month_key(conn: sqlite3.Connection) -> str:
+    found = row(
+        conn,
+        """
+        SELECT period_key
+        FROM fact_performance_paths_daily
+        WHERE period_type='month'
+        GROUP BY period_key
+        ORDER BY MAX(date) DESC
+        LIMIT 1
+        """,
+    )
+    if found is None:
+        raise SystemExit("No monthly performance period found.")
+    return str(found["period_key"])
+
+
+def risk_breaches(conn: sqlite3.Connection, period_key: str) -> int | None:
+    info = rows(conn, "PRAGMA table_info(v_report_risk_daily)")
+    breach_cols = [r["name"] for r in info if str(r["name"]).startswith("breach_")]
+    if not breach_cols:
+        return None
+    expr = " + ".join(f"COALESCE({c},0)" for c in breach_cols)
+    found = row(conn, f"SELECT SUM({expr}) AS breaches FROM v_report_risk_daily WHERE period_key=?", (period_key,))
+    return None if found is None or found["breaches"] is None else int(found["breaches"])
+
+
+def drawdown(conn: sqlite3.Connection) -> tuple[float | None, float | None]:
+    found = row(
+        conn,
+        """
+        SELECT
+          (SELECT drawdown FROM fact_performance_paths_daily WHERE period_key='since_inception' ORDER BY date DESC LIMIT 1) AS current_dd,
+          MIN(drawdown) AS max_dd
+        FROM fact_performance_paths_daily
+        WHERE period_key='since_inception'
+        """,
+    )
+    if found is None:
+        return None, None
+    return found["current_dd"], found["max_dd"]
+
+
+def public_drivers(conn: sqlite3.Connection, period_key: str) -> list[dict]:
+    found = row(
+        conn,
+        """
+        SELECT *
+        FROM v_report_nav_bridge_period
+        WHERE period_key=? AND scope='TOTAL'
+        """,
+        (period_key,),
+    )
+    if found is None or not found["start_nav_cad"]:
+        return []
+    start_nav = float(found["start_nav_cad"])
+    raw = [
+        ("Options P&L", found["option_pnl_cad"]),
+        ("Stock/ETF P&L", found["stock_etf_pnl_cad"]),
+        ("Dividends", found["dividends_cad"]),
+        ("Interest Income", found["interest_income_cad"]),
+        ("Commissions", -float(found["commissions_cad"] or 0)),
+        ("Margin Interest", -float(found["margin_interest_cad"] or 0)),
+        ("Fees", -float(found["fees_cad"] or 0)),
+        ("FX Conversion Drag", -float(found["fx_conversion_drag_cad"] or 0)),
+        ("Residual / Open Marks", found["bridge_balance_cad"]),
+    ]
+    out = []
+    for label, cad_value in raw:
+        value = float(cad_value or 0) / start_nav
+        if abs(value) >= 0.00005:
+            out.append({"label": label, "value": value})
+    return out
+
+
+def svg_path_chart(path: list[sqlite3.Row], out: Path) -> None:
+    width, height = 720, 420
+    left, right, top, bottom = 64, 660, 70, 330
+    vals = []
+    for r in path:
+        vals.append(float(r["equity_index"] or 100) / 100 - 1)
+        vals.append(float(r["spx_tr_index_cad"] or 100) / 100 - 1)
+    lo, hi = min(vals + [0]), max(vals + [0])
+    if hi == lo:
+        hi, lo = hi + 0.01, lo - 0.01
+
+    def points(col: str) -> str:
+        n = max(len(path) - 1, 1)
+        pts = []
+        for i, r in enumerate(path):
+            v = float(r[col] or 100) / 100 - 1
+            x = left + (right - left) * i / n
+            y = bottom - (v - lo) / (hi - lo) * (bottom - top)
+            pts.append(f"{x:.1f},{y:.1f}")
+        return " ".join(pts)
+
+    out.write_text(
+        f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" role="img">
+  <rect width="{width}" height="{height}" fill="#fbfaf6"/>
+  <g stroke="#d7d0c4" stroke-width="1">
+    <line x1="{left}" y1="{bottom}" x2="{right}" y2="{bottom}"/>
+    <line x1="{left}" y1="{top}" x2="{right}" y2="{top}"/>
+  </g>
+  <text x="64" y="38" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#141719">Performance Path</text>
+  <polyline points="{points("equity_index")}" fill="none" stroke="#315f5b" stroke-width="4"/>
+  <polyline points="{points("spx_tr_index_cad")}" fill="none" stroke="#8b5f2b" stroke-width="4"/>
+  <text x="64" y="372" font-family="Inter, Arial, sans-serif" font-size="13" fill="#315f5b">Portfolio</text>
+  <text x="160" y="372" font-family="Inter, Arial, sans-serif" font-size="13" fill="#8b5f2b">S&amp;P 500 TR CAD</text>
+</svg>
+""",
+        encoding="utf-8",
+    )
+
+
+def svg_driver_chart(drivers: list[dict], out: Path) -> None:
+    width, height = 720, 420
+    max_abs = max([abs(d["value"]) for d in drivers] + [0.01])
+    bars = []
+    for i, d in enumerate(drivers[:8]):
+        y = 92 + i * 36
+        w = abs(d["value"]) / max_abs * 230
+        color = "#315f5b" if d["value"] >= 0 else "#8a2f2f"
+        x = 330 if d["value"] >= 0 else 330 - w
+        bars.append(
+            f'<text x="64" y="{y + 19}" font-family="Inter, Arial, sans-serif" font-size="13" fill="#141719">{html.escape(d["label"])}</text>'
+            f'<rect x="{x:.1f}" y="{y}" width="{w:.1f}" height="24" fill="{color}"/>'
+            f'<text x="584" y="{y + 18}" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="13" fill="#141719">{signed_pct(d["value"])}</text>'
+        )
+    out.write_text(
+        f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" role="img">
+  <rect width="{width}" height="{height}" fill="#fbfaf6"/>
+  <text x="64" y="38" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#141719">Return Drivers</text>
+  <text x="64" y="62" font-family="Inter, Arial, sans-serif" font-size="12" fill="#5f676b">Percent of beginning NAV. No dollar values.</text>
+  <line x1="330" y1="82" x2="330" y2="370" stroke="#d7d0c4" stroke-width="1"/>
+  {''.join(bars)}
+</svg>
+""",
+        encoding="utf-8",
+    )
+
+
+def write_record(conn: sqlite3.Connection, period_key: str, root: Path) -> dict:
+    month = score(conn, period_key)
+    if month is None:
+        raise SystemExit(f"No data for {period_key}")
+    suffix = period_key.replace("month_", "").replace("_", "-")
+    period_scores = {
+        "1m": month,
+        "3m": score(conn, "trailing_3m"),
+        "12m": score(conn, "trailing_12m"),
+        "since": score(conn, "since_inception"),
+    }
+    current_dd, max_dd = drawdown(conn)
+    breaches = risk_breaches(conn, period_key)
+    drivers = public_drivers(conn, period_key)
+
+    image_dir = root / "static" / "images" / "performance"
+    image_dir.mkdir(parents=True, exist_ok=True)
+    path_chart = f"/images/performance/{suffix}-path.svg"
+    driver_chart = f"/images/performance/{suffix}-drivers.svg"
+    svg_path_chart(month["path"], image_dir / f"{suffix}-path.svg")
+    svg_driver_chart(drivers, image_dir / f"{suffix}-drivers.svg")
+
+    title = f"{month['display_name']} Performance Record"
+    front = {
+        "title": title,
+        "date": f"{month['last_date']}T08:00:00-07:00",
+        "draft": False,
+        "month_covered": month["display_name"],
+        "portfolio_1m": pct(period_scores["1m"]["portfolio"]),
+        "benchmark_1m": pct(period_scores["1m"]["benchmark"]),
+        "excess_1m": signed_pct(period_scores["1m"]["excess"]),
+        "portfolio_3m": pct(period_scores["3m"]["portfolio"] if period_scores["3m"] else None),
+        "benchmark_3m": pct(period_scores["3m"]["benchmark"] if period_scores["3m"] else None),
+        "excess_3m": signed_pct(period_scores["3m"]["excess"] if period_scores["3m"] else None),
+        "portfolio_12m": pct(period_scores["12m"]["portfolio"] if period_scores["12m"] else None),
+        "benchmark_12m": pct(period_scores["12m"]["benchmark"] if period_scores["12m"] else None),
+        "excess_12m": signed_pct(period_scores["12m"]["excess"] if period_scores["12m"] else None),
+        "portfolio_since_inception": pct(period_scores["since"]["portfolio"] if period_scores["since"] else None),
+        "benchmark_since_inception": pct(period_scores["since"]["benchmark"] if period_scores["since"] else None),
+        "excess_since_inception": signed_pct(period_scores["since"]["excess"] if period_scores["since"] else None),
+        "current_drawdown": pct(current_dd),
+        "max_drawdown": pct(max_dd),
+        "risk_breach_days": "n/a" if breaches is None else str(breaches),
+        "path_chart": path_chart,
+        "driver_chart": driver_chart,
+        "tags": ["performance"],
+        "summary": f"Public performance record for {month['display_name']}.",
+    }
+    body = f"""{front_matter(front)}
+
+## Record
+
+| Measure | Portfolio | Benchmark | Difference |
+| --- | ---: | ---: | ---: |
+| 1M | {front["portfolio_1m"]} | {front["benchmark_1m"]} | {front["excess_1m"]} |
+| 3M | {front["portfolio_3m"]} | {front["benchmark_3m"]} | {front["excess_3m"]} |
+| 12M | {front["portfolio_12m"]} | {front["benchmark_12m"]} | {front["excess_12m"]} |
+| Since inception | {front["portfolio_since_inception"]} | {front["benchmark_since_inception"]} | {front["excess_since_inception"]} |
+
+## Risk
+
+| Measure | Result |
+| --- | ---: |
+| Current drawdown | {front["current_drawdown"]} |
+| Max drawdown | {front["max_drawdown"]} |
+| Risk breach days | {front["risk_breach_days"]} |
+
+No NAV dollars, net P&L dollars, deposits, withdrawals, or account balances are included.
+"""
+    post_path = root / "content" / "performance" / f"{suffix}.md"
+    post_path.write_text(body, encoding="utf-8")
+    return front
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--db", type=Path, default=DEFAULT_DB)
+    parser.add_argument("--site", type=Path, default=ROOT)
+    parser.add_argument("--period-key")
+    args = parser.parse_args()
+
+    conn = sqlite3.connect(f"file:{args.db}?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
+    try:
+        period_key = args.period_key or latest_month_key(conn)
+        record = write_record(conn, period_key, args.site)
+        data_path = args.site / "data" / "latest_performance.json"
+        data_path.parent.mkdir(parents=True, exist_ok=True)
+        data_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+        print(f"wrote {record['title']}")
+    finally:
+        conn.close()
+
+
+if __name__ == "__main__":
+    main()

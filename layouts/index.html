@@ -1,0 +1,48 @@
+{{ define "main" }}
+{{ $records := where .Site.RegularPages "Section" "performance" }}
+{{ $latest := index $records 0 }}
+<section class="hero">
+  <div>
+    <p class="eyebrow">Personal portfolio record</p>
+    <h1>Retail Options Trading</h1>
+    <p class="lede">Monthly TWR, benchmark comparison, drawdown, risk breaches, and return drivers. No NAV dollars. No net P&amp;L dollars. No account balances.</p>
+    <div class="actions">
+      <a class="button primary" href="/performance/">View Record</a>
+      <a class="button" href="/methodology/">Methodology</a>
+    </div>
+  </div>
+  <aside class="principles" aria-label="Publishing rules">
+    <div><span>01</span> Returns over wealth</div>
+    <div><span>02</span> Every month, same format</div>
+    <div><span>03</span> Process over performance theater</div>
+  </aside>
+</section>
+
+{{ with $latest }}
+<section class="band">
+  <div class="section-head">
+    <p class="eyebrow">Latest record</p>
+    <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+  </div>
+  <div class="metric-grid">
+    <div><span>1M Portfolio</span><strong>{{ .Params.portfolio_1m | default "n/a" }}</strong></div>
+    <div><span>1M Benchmark</span><strong>{{ .Params.benchmark_1m | default "n/a" }}</strong></div>
+    <div><span>Difference</span><strong>{{ .Params.excess_1m | default "n/a" }}</strong></div>
+    <div><span>Max Drawdown</span><strong>{{ .Params.max_drawdown | default "n/a" }}</strong></div>
+  </div>
+</section>
+{{ end }}
+
+<section class="split">
+  <div>
+    <p class="eyebrow">Automated</p>
+    <h2>Performance Records</h2>
+    <p>Pure monthly records generated from the reporting database after checks pass. Each record includes 1M, trailing 3M, trailing 12M, since-inception, drawdown, risk, and two visuals.</p>
+  </div>
+  <div>
+    <p class="eyebrow">Manual</p>
+    <h2>PM Notes</h2>
+    <p>Quarterly or annual judgment when there is something useful to say: mistakes, decisions, risk posture, and process changes. Plain markdown is enough.</p>
+  </div>
+</section>
+{{ end }}
