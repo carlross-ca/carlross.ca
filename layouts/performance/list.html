@@ -14,17 +14,19 @@
         <th>12M</th>
         <th>Since Inc.</th>
         <th>Since Inc. SP500TR</th>
+        <th>PDF</th>
       </tr>
     </thead>
     <tbody>
       {{ range .Pages }}
       <tr>
-        <td><a href="{{ .RelPermalink }}">{{ .Params.month_covered | default .Title }}</a></td>
+        <td><a href="{{ .Params.pdf_url | default .RelPermalink }}">{{ .Params.month_covered | default .Title }}</a></td>
         <td>{{ .Params.portfolio_1m | default "n/a" }}</td>
         <td>{{ .Params.portfolio_3m | default "n/a" }}</td>
         <td>{{ .Params.portfolio_12m | default "n/a" }}</td>
         <td>{{ .Params.portfolio_since_inception | default "n/a" }}</td>
         <td>{{ .Params.benchmark_since_inception | default "n/a" }}</td>
+        <td>{{ if .Params.pdf_url }}<a href="{{ .Params.pdf_url }}">Open</a>{{ else }}n/a{{ end }}</td>
       </tr>
       {{ end }}
     </tbody>

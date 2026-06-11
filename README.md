@@ -18,28 +18,34 @@ Performance posts publish percentages only:
 - risk breach days
 - two visuals
 
-## Export Monthly Performance
+## Export Monthly Performance PDF
 
 On the VPS, from the site directory:
 
 ```bash
-python3 scripts/export_performance_records.py --db /home/trader/trading/composite.db --site /home/trader/carlross.ca
+python3 scripts/export_performance_pdf.py --db /home/trader/trading/composite.db --site /home/trader/carlross.ca --period-key month_2026_06
 ```
 
-By default, this exports every monthly performance period in the reporting database.
+This writes a frozen browser-openable PDF record and a small Hugo index page:
 
-For a specific period:
+- `static/reports/performance/YYYY-MM-performance-record.pdf`
+- `content/performance/YYYY-MM.md`
+- `data/performance_records.json`
+- `data/latest_performance.json`
+
+For the previous completed month:
 
 ```bash
-python3 scripts/export_performance_records.py --db /home/trader/trading/composite.db --site /home/trader/carlross.ca --period-key month_2026_06
+python3 scripts/export_performance_pdf.py --db /home/trader/trading/composite.db --site /home/trader/carlross.ca --completed-month previous
 ```
 
-The script writes:
+To publish from the VPS:
 
-- `content/performance/YYYY-MM.md`
-- `static/images/performance/YYYY-MM-path.svg`
-- `static/images/performance/YYYY-MM-drivers.svg`
-- `data/latest_performance.json`
+```bash
+bash scripts/publish_previous_month_pdf.sh
+```
+
+Schedule this monthly after reporting checks pass, not daily. The private dashboard can remain live; public monthly PDFs should be frozen records.
 
 ## Local Preview
 
