@@ -165,7 +165,7 @@ def path_chart(pdf: Pdf, x: float, y: float, w: float, h: float, period: dict) -
     for value in sorted([lo, 100.0, hi]):
         _, py = xy(0, value)
         pdf.line(left, py, right, py)
-        pdf.text(x + 8, py - 3, f"{value:.1f}", 6, MUTED)
+        pdf.text(x + 8, py - 3, f"{value - 100:.1f}%", 6, MUTED)
     pdf.polyline([xy(i, float(p["benchmark"])) for i, p in enumerate(pts)], SPX_BLUE)
     pdf.polyline([xy(i, float(p["portfolio"])) for i, p in enumerate(pts)], PORTFOLIO_RED)
     pdf.text(left, y - h + 12, pts[0]["date"], 6, MUTED)
@@ -211,38 +211,21 @@ def risk_chart(pdf: Pdf, x: float, y: float, w: float, h: float, months: list[di
         pdf.text(cx - 13, y - h + 12, m["month"], 6, MUTED)
 
 
-def normalized_points(path: list[sqlite3.Row]) -> list[dict]:
-    if not path:
-        return []
-    first_equity = float(path[0]["equity_index"] or 100)
-    first_benchmark = float(path[0]["spx_tr_index_cad"] or 100)
-    return [
-        {
-            "date": str(r["date"]),
-            "portfolio": round(float(r["equity_index"] or first_equity) / first_equity * 100, 4),
-            "benchmark": round(float(r["spx_tr_index_cad"] or first_benchmark) / first_benchmark * 100, 4),
-        }
-        for r in path
-    ]
-
-
-def score_from_path(period_key: str, label: str, path: list[sqlite3.Row], raw_index: bool = False) -> dict | None:
+def score_from_path(period_key: str, label: str, path: list[sqlite3.Row]) -> dict | None:
     if not path:
         return None
-    first, last = path[0], path[-1]
-    first_equity = float(first["equity_index"] or 100)
-    first_benchmark = float(first["spx_tr_index_cad"] or 100)
-    portfolio = float(last["equity_index"] or first_equity) / first_equity - 1
-    benchmark = float(last["spx_tr_index_cad"] or first_benchmark) / first_benchmark - 1
+    last = path[-1]
+    portfolio = float(last["equity_index"] or 100) / 100 - 1
+    benchmark = float(last["spx_tr_index_cad"] or 100) / 100 - 1
     return {
         "period_key": period_key,
         "label": label,
-        "start_date": first["date"],
+        "start_date": path[0]["date"],
         "end_date": last["date"],
         "portfolio": pct(portfolio),
         "benchmark": pct(benchmark),
         "excess": signed_pct(portfolio - benchmark),
-        "path": path_points(path) if raw_index else normalized_points(path),
+        "path": [{"date": "2026-04-30", "portfolio": 100.0, "benchmark": 100.0}] + path_points(path),
     }
 
 
@@ -264,9 +247,8 @@ def asof_path(conn: sqlite3.Connection, end_date: str, row_limit: int | None) ->
     return list(reversed(found))
 
 
-def asof_payload(conn: sqlite3.Connection, label: str, path: list[sqlite3.Row], driver_key: str, risk_key: str, raw_index: bool = False) -> dict | None:
-    raw = raw_index or bool(path and path[0]["date"] == "2026-05-01")
-    payload = score_from_path(label.lower().replace(" ", "_"), label, path, raw)
+def asof_payload(conn: sqlite3.Connection, label: str, path: list[sqlite3.Row], driver_key: str, risk_key: str) -> dict | None:
+    payload = score_from_path(label.lower().replace(" ", "_"), label, path)
     if payload is None:
         return None
     payload["drivers"] = [
@@ -352,13 +334,8 @@ def pdf_report_periods(conn: sqlite3.Connection, month_key: str) -> list[dict]:
     if month is None:
         return []
     end_date = month["last_date"]
-    month_payload = asof_payload(conn, "Trailing 1 Month", month["path"], month_key, month_key, True)
-    if month_payload is not None:
-        month_payload["portfolio"] = pct(month["portfolio"])
-        month_payload["benchmark"] = pct(month["benchmark"])
-        month_payload["excess"] = signed_pct(month["excess"])
     requested = [
-        month_payload,
+        asof_payload(conn, "Trailing 1 Month", month["path"], month_key, month_key),
         asof_payload(conn, "Trailing 3 Months", asof_path(conn, end_date, 63), month_key, month_key),
         asof_payload(conn, "Trailing 12 Months", asof_path(conn, end_date, 252), month_key, month_key),
         asof_payload(conn, "Since Inception", asof_path(conn, end_date, None), month_key, month_key),
@@ -419,6 +396,27 @@ def period_key_for_previous_month(today: date) -> str:
     return f"{date(year, month, 1).strftime('%b').lower()}_{year}"
 
 
+def drawdown_asof(conn: sqlite3.Connection, end_date: str) -> tuple[float | None, float | None]:
+    found = conn.execute(
+        """
+        SELECT
+          (SELECT drawdown
+           FROM fact_performance_paths_daily
+           WHERE period_key='since_inception' AND date <= ?
+           ORDER BY date DESC
+           LIMIT 1) AS current_dd,
+          MIN(drawdown) AS max_dd
+        FROM fact_performance_paths_daily
+        WHERE period_key='since_inception'
+          AND date <= ?
+        """,
+        (end_date, end_date),
+    ).fetchone()
+    if found is None:
+        return None, None
+    return found["current_dd"], found["max_dd"]
+
+
 def write_one(conn: sqlite3.Connection, root: Path, period_key: str) -> dict:
     month = score(conn, period_key)
     if month is None:
@@ -429,10 +427,12 @@ def write_one(conn: sqlite3.Connection, root: Path, period_key: str) -> dict:
     pdf_path = root / "static" / pdf_url.lstrip("/")
     title = f"{month['display_name']} Performance Record"
     write_pdf(pdf_path, title, periods)
-    current_dd, max_dd = drawdown(conn)
+    current_dd, max_dd = drawdown_asof(conn, month["last_date"])
     front = {
         "title": title,
         "date": f"{month['last_date']}T08:00:00-07:00",
+        "as_of_date": month["last_date"],
+        "inception_date": "2026-05-01",
         "draft": False,
         "month_covered": month["display_name"],
         "portfolio_1m": periods[0]["portfolio"] if periods else pct(month["portfolio"]),

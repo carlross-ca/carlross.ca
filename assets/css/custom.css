@@ -146,6 +146,12 @@ h2 {
   font-size: 30px;
 }
 
+.record-summary .inception-date em {
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+}
+
 .actions {
   margin-top: 30px;
   padding-bottom: 30px;

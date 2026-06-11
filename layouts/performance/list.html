@@ -7,7 +7,11 @@
   <h1>Performance</h1>
   <p class="lede small">Automated monthly records.</p>
   <div class="record-summary">
-    <div class="inception-date"><span>Inception Date</span><strong>2026-05-01</strong></div>
+    <div class="inception-date">
+      <span>Inception Date</span>
+      <strong>2026-05-01</strong>
+      {{ with $latest }}<em>Metrics through {{ .as_of_date | default .date }}</em>{{ end }}
+    </div>
     {{ with $latest }}
     <div><span>Since Inc.</span><strong>{{ .portfolio_since_inception | default "n/a" }}</strong></div>
     <div><span>Since Inc. SP500TR</span><strong>{{ .benchmark_since_inception | default "n/a" }}</strong></div>
