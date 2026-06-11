@@ -238,7 +238,7 @@ def period_key_for_previous_month(today: date) -> str:
     if month == 0:
         year -= 1
         month = 12
-    return f"month_{year}_{month:02d}"
+    return f"{date(year, month, 1).strftime("%b").lower()}_{year}"
 
 
 def write_record_page(root: Path, period_key: str, front: dict) -> None:
