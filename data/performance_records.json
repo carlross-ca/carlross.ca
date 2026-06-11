@@ -1,0 +1,22 @@
+[
+  {
+    "title": "May 2026 Performance Record",
+    "date": "2026-05-29T08:00:00-07:00",
+    "draft": false,
+    "month_covered": "May 2026",
+    "portfolio_1m": "6.04%",
+    "benchmark_1m": "6.61%",
+    "excess_1m": "-0.57%",
+    "portfolio_3m": "0.09%",
+    "portfolio_12m": "0.09%",
+    "portfolio_since_inception": "0.09%",
+    "benchmark_since_inception": "3.24%",
+    "max_drawdown": "n/a",
+    "risk_breach_days": "65",
+    "pdf_url": "/reports/performance/may-2026-performance-record.pdf",
+    "tags": [
+      "performance"
+    ],
+    "summary": "PDF public performance record for May 2026."
+  }
+]
