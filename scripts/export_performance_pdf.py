@@ -13,7 +13,6 @@ from export_performance_records import (
     DEFAULT_DB,
     ROOT,
     decimal,
-    drawdown,
     monthly_period_keys,
     path_points,
     pct,
@@ -30,6 +29,7 @@ from export_performance_records import (
 PAGE_W, PAGE_H = 612, 792
 INK = (0.08, 0.09, 0.10)
 MUTED = (0.37, 0.40, 0.42)
+WHITE = (1.0, 1.0, 1.0)
 LINE = (0.84, 0.82, 0.77)
 PAPER = (0.98, 0.98, 0.96)
 ACCENT = (0.19, 0.37, 0.36)
@@ -121,18 +121,18 @@ class Pdf:
         path.write_bytes(out)
 
 
-def table(pdf: Pdf, x: float, y: float, widths: list[float], header: list[str], rows: list[list[object]], row_h: float = 15, size: int = 7) -> float:
+def table(pdf: Pdf, x: float, y: float, widths: list[float], header: list[str], rows: list[list[object]], row_h: float = 18, size: int = 9) -> float:
     pdf.rect(x, y - row_h, sum(widths), row_h, fill=PAPER)
     cx = x
     for w, h in zip(widths, header):
-        pdf.text(cx + 4, y - 10, h, size, MUTED, True)
+        pdf.text(cx + 5, y - 12, h, size, MUTED, True)
         cx += w
     y -= row_h
     for row in rows:
         pdf.line(x, y, x + sum(widths), y)
         cx = x
         for w, cell in zip(widths, row):
-            pdf.text(cx + 4, y - 10, cell, size, INK)
+            pdf.text(cx + 5, y - 12, cell, size, INK)
             cx += w
         y -= row_h
     pdf.rect(x, y, sum(widths), row_h * (len(rows) + 1))
@@ -140,16 +140,16 @@ def table(pdf: Pdf, x: float, y: float, widths: list[float], header: list[str], 
 
 
 def section_title(pdf: Pdf, y: float, title: str, subtitle: str | None = None) -> None:
-    pdf.centered_text(y, title, 12, INK, True)
+    pdf.centered_text(y, title, 16, INK, True)
     if subtitle:
-        pdf.centered_text(y - 13, subtitle, 8, MUTED)
+        pdf.centered_text(y - 16, subtitle, 10, MUTED)
 
 
 def path_chart(pdf: Pdf, x: float, y: float, w: float, h: float, period: dict) -> None:
     pts = period.get("path", [])
     pdf.rect(x, y - h, w, h, fill=PAPER)
     if not pts:
-        pdf.text(x + 8, y - 34, "No path data", 8, MUTED)
+        pdf.text(x + 8, y - 34, "No path data", 10, MUTED)
         return
     vals = [float(p["portfolio"]) for p in pts] + [float(p["benchmark"]) for p in pts] + [100.0]
     lo, hi = min(vals), max(vals)
@@ -165,20 +165,20 @@ def path_chart(pdf: Pdf, x: float, y: float, w: float, h: float, period: dict) -
     for value in sorted([lo, 100.0, hi]):
         _, py = xy(0, value)
         pdf.line(left, py, right, py)
-        pdf.text(x + 8, py - 3, f"{value - 100:.1f}%", 6, MUTED)
+        pdf.text(x + 8, py - 4, f"{value - 100:.1f}%", 8, MUTED)
     pdf.polyline([xy(i, float(p["benchmark"])) for i, p in enumerate(pts)], SPX_BLUE)
     pdf.polyline([xy(i, float(p["portfolio"])) for i, p in enumerate(pts)], PORTFOLIO_RED)
-    pdf.text(left, y - h + 12, pts[0]["date"], 6, MUTED)
-    pdf.text((left + right) / 2 - 18, y - h + 12, pts[len(pts) // 2]["date"], 6, MUTED)
-    pdf.text(right - 42, y - h + 12, pts[-1]["date"], 6, MUTED)
-    pdf.text(left, y - 12, "Portfolio", 7, PORTFOLIO_RED, True)
-    pdf.text(left + 52, y - 12, "S&P 500 TR", 7, SPX_BLUE, True)
+    pdf.text(left, y - h + 12, pts[0]["date"], 8, MUTED)
+    pdf.text((left + right) / 2 - 24, y - h + 12, pts[len(pts) // 2]["date"], 8, MUTED)
+    pdf.text(right - 56, y - h + 12, pts[-1]["date"], 8, MUTED)
+    pdf.text(left, y - 12, "Portfolio", 9, PORTFOLIO_RED, True)
+    pdf.text(left + 64, y - 12, "S&P 500 TR", 9, SPX_BLUE, True)
 
 
 def driver_chart(pdf: Pdf, x: float, y: float, w: float, h: float, drivers: list[dict]) -> None:
     pdf.rect(x, y - h, w, h, fill=PAPER)
     if not drivers:
-        pdf.text(x + 8, y - 34, "No driver data", 8, MUTED)
+        pdf.text(x + 8, y - 34, "No driver data", 10, MUTED)
         return
     max_abs = max(abs(float(d["value"])) for d in drivers) or 0.01
     mid = x + w * 0.54
@@ -189,15 +189,14 @@ def driver_chart(pdf: Pdf, x: float, y: float, w: float, h: float, drivers: list
         v = float(d["value"])
         bw = abs(v) / max_abs * (w * 0.34)
         bx = mid - bw if v < 0 else mid
-        pdf.text(x + 8, by + 2, d["label"], 6, INK)
+        pdf.text(x + 8, by + 1, d["label"], 8, INK)
         pdf.rect(bx, by, bw, 8, stroke=ACCENT if v >= 0 else BAD, fill=ACCENT if v >= 0 else BAD)
-        pdf.text(x + w - 36, by + 2, d["display"], 6, INK)
 
 
 def risk_chart(pdf: Pdf, x: float, y: float, w: float, h: float, months: list[dict]) -> None:
     pdf.rect(x, y - h, w, h, fill=PAPER)
     if not months:
-        pdf.text(x + 8, y - 34, "No risk data", 8, MUTED)
+        pdf.text(x + 8, y - 34, "No risk data", 10, MUTED)
         return
     max_v = max(int(m["breaches"]) for m in months) or 1
     left, right, bottom, top = x + 28, x + w - 14, y - h + 28, y - 18
@@ -207,8 +206,9 @@ def risk_chart(pdf: Pdf, x: float, y: float, w: float, h: float, months: list[di
         cx = left + (right - left) * (i + 0.5) / len(months)
         bh = int(m["breaches"]) / max_v * (top - bottom)
         pdf.rect(cx - bw / 2, bottom, bw, bh, stroke=ACCENT, fill=ACCENT)
-        pdf.text(cx - 5, bottom + bh + 4, m["breaches"], 6, INK)
-        pdf.text(cx - 13, y - h + 12, m["month"], 6, MUTED)
+        label_y = bottom + max(6, bh - 14)
+        pdf.text(cx - 5, label_y, m["breaches"], 10, WHITE, True)
+        pdf.text(cx - 18, y - h + 12, m["month"], 8, MUTED)
 
 
 def score_from_path(period_key: str, label: str, path: list[sqlite3.Row]) -> dict | None:
@@ -372,7 +372,7 @@ def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
             15,
         )
 
-        section_title(pdf, 300, "Risk Breach Days by Month", "custom personal risk framework for daily monitoring. Goal: < 10 per month")
+        section_title(pdf, 300, "Risk Breach Days")
         risk_chart(pdf, 42, 270, 214, 140, p.get("risk_months", []))
         table(
             pdf,
@@ -381,10 +381,10 @@ def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
             [84, 40, 42, 66, 46],
             ["Metric", "Avg", "Median", "Limit", "Breaches"],
             [[r["metric"], r["avg"], r["median"], r["limit"], r["breach_days"]] for r in p.get("risk_rows", [])],
-            13,
-            6,
+            16,
+            8,
         )
-        pdf.centered_text(36, f"carlross.ca | {title}", 7, MUTED)
+        pdf.centered_text(36, f"carlross.ca | {title}", 9, MUTED)
     pdf.save(path)
 
 
@@ -397,42 +397,45 @@ def period_key_for_previous_month(today: date) -> str:
     return f"{date(year, month, 1).strftime('%b').lower()}_{year}"
 
 
-def drawdown_asof(conn: sqlite3.Connection, end_date: str) -> tuple[float | None, float | None]:
+INCEPTION_DATE = "2026-05-01"
+
+
+def drawdown_asof(conn: sqlite3.Connection, start_date: str, end_date: str) -> tuple[float | None, float | None]:
     found = conn.execute(
         """
         SELECT
           (SELECT drawdown
            FROM fact_performance_paths_daily
-           WHERE period_key='since_inception' AND date <= ?
+           WHERE period_key='since_inception' AND date BETWEEN ? AND ?
            ORDER BY date DESC
            LIMIT 1) AS current_dd,
           MIN(drawdown) AS max_dd
         FROM fact_performance_paths_daily
         WHERE period_key='since_inception'
-          AND date <= ?
+          AND date BETWEEN ? AND ?
         """,
-        (end_date, end_date),
+        (start_date, end_date, start_date, end_date),
     ).fetchone()
     if found is None:
         return None, None
     return found["current_dd"], found["max_dd"]
 
 
-def benchmark_drawdown_asof(conn: sqlite3.Connection, end_date: str) -> tuple[float | None, float | None]:
+def benchmark_drawdown_asof(conn: sqlite3.Connection, start_date: str, end_date: str) -> tuple[float | None, float | None]:
     found = conn.execute(
         """
         SELECT
           (SELECT spx_tr_drawdown_cad
            FROM fact_performance_paths_daily
-           WHERE period_key='since_inception' AND date <= ?
+           WHERE period_key='since_inception' AND date BETWEEN ? AND ?
            ORDER BY date DESC
            LIMIT 1) AS current_dd,
           MIN(spx_tr_drawdown_cad) AS max_dd
         FROM fact_performance_paths_daily
         WHERE period_key='since_inception'
-          AND date <= ?
+          AND date BETWEEN ? AND ?
         """,
-        (end_date, end_date),
+        (start_date, end_date, start_date, end_date),
     ).fetchone()
     if found is None:
         return None, None
@@ -449,13 +452,13 @@ def write_one(conn: sqlite3.Connection, root: Path, period_key: str) -> dict:
     pdf_path = root / "static" / pdf_url.lstrip("/")
     title = f"{month['display_name']} Performance Record"
     write_pdf(pdf_path, title, periods)
-    current_dd, max_dd = drawdown_asof(conn, month["last_date"])
-    benchmark_current_dd, benchmark_max_dd = benchmark_drawdown_asof(conn, month["last_date"])
+    current_dd, max_dd = drawdown_asof(conn, INCEPTION_DATE, month["last_date"])
+    benchmark_current_dd, benchmark_max_dd = benchmark_drawdown_asof(conn, INCEPTION_DATE, month["last_date"])
     front = {
         "title": title,
         "date": f"{month['last_date']}T08:00:00-07:00",
         "as_of_date": month["last_date"],
-        "inception_date": "2026-05-01",
+        "inception_date": INCEPTION_DATE,
         "draft": False,
         "month_covered": month["display_name"],
         "portfolio_1m": periods[0]["portfolio"] if periods else pct(month["portfolio"]),
