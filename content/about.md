@@ -50,7 +50,7 @@ The metrics are:
 - Annual Theta / AUM: annualized option decay exposure relative to portfolio size.
 - Margin Cushion / AUM: remaining account flexibility relative to portfolio size.
 - Contracts: open option contract load.
-- 30d Trade Count: recent trading activity and process discipline.
+- 30d Trade Count: buy/sell transaction count from the trailing 30 calendar days.
 - VIX: market-stress backdrop.
 
 The current target is fewer than 10 breach days per month. That target is intentionally provisional: more monthly data should make the limits more precise and stricter over time. Risk monitoring and risk management will also need to strengthen as AUM grows.
