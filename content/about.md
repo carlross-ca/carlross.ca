@@ -45,13 +45,13 @@ Risk breach days are my own control metric, not an industry-standard performance
 The metrics are:
 
 - Asset Delta / AUM: directional market exposure relative to portfolio size.
-- Asset Gamma / AUM: how quickly directional exposure can change as prices move.
-- P&L per +10 IV / AUM: estimated portfolio impact from a 10-point rise in implied volatility.
+- Asset Gamma / AUM: how quickly delta exposure can change as prices move.
+- P&L per +10 IV / AUM: estimated portfolio impact from a 10-pt rise in implied volatility.
 - Annual Theta / AUM: annualized option decay exposure relative to portfolio size.
-- Margin Cushion / AUM: remaining account flexibility relative to portfolio size.
-- Contracts: open option contract load.
+- Margin Cushion / AUM: remaining buying power in dollars relative to portfolio size.
+- Contracts: count of open distinct option contracts
 - 30d Trade Count: buy/sell transaction count from the trailing 30 calendar days.
-- VIX: market-stress backdrop.
+- VIX: SP500 Vol Index (30-day implied)
 
 The current target is fewer than 10 breach days per month. That target is intentionally provisional: more monthly data should make the limits more precise and stricter over time. Risk monitoring and risk management will also need to strengthen as AUM grows.
 
