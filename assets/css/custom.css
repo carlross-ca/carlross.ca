@@ -62,11 +62,23 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
   padding: 34px 24px 64px;
 }
 
+.home-main {
+  padding-bottom: 0;
+}
+
 .hero {
   min-height: calc(100vh - 132px);
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--line);
+}
+
+.home-hero {
+  border-bottom: 0;
+}
+
+.home-hero .actions {
+  padding-bottom: 0;
 }
 
 .eyebrow {

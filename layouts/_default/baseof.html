@@ -15,7 +15,7 @@
       {{ range .Site.Menus.main }}<a href="{{ .URL }}">{{ .Name }}</a>{{ end }}
     </nav>
   </header>
-  <main class="site-main">
+  <main class="site-main{{ if .IsHome }} home-main{{ end }}">
     {{ block "main" . }}{{ end }}
   </main>
   {{ partial "footer.html" . }}
