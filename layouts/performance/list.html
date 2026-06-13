@@ -9,48 +9,73 @@
 <section class="article-head">
   <p class="eyebrow">Public record</p>
   <h1>Performance</h1>
-  <p class="lede small">Automated monthly records. Performance figures are CAD-based and time-weighted.</p>
-  <div class="record-summary">
-    <div class="inception-date">
+  <p class="lede small">Performance figures are CAD-based and time-weighted.</p>
+  <div class="record-dates">
+    <div>
       <span>Inception Date</span>
       <strong>{{ $inceptionDate }}</strong>
-      {{ if $referenceDate }}
+    </div>
+    {{ if $referenceDate }}
+    <div>
       <span>Reference Date</span>
       <strong class="reference-date">{{ $referenceDate }}</strong>
-      {{ end }}
     </div>
-    {{ with $latest }}
-    <div><span>Since Inc. Portfolio</span><strong>{{ .portfolio_since_inception | default "n/a" }}</strong></div>
-    <div><span>Portfolio Current DD</span><strong>{{ .current_drawdown | default "n/a" }}</strong></div>
-    <div><span>Portfolio Max DD</span><strong>{{ .max_drawdown | default "n/a" }}</strong></div>
-    <div><span>Since Inc. SP500TR</span><strong>{{ .benchmark_since_inception | default "n/a" }}</strong></div>
-    <div><span>SP500TR Current DD</span><strong>{{ .benchmark_current_drawdown | default "n/a" }}</strong></div>
-    <div><span>SP500TR Max DD</span><strong>{{ .benchmark_max_drawdown | default "n/a" }}</strong></div>
     {{ end }}
   </div>
+  <div class="summary-table-wrap">
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Since Inc.</th>
+          <th>Current DD</th>
+          <th>Max DD</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ with $latest }}
+        <tr>
+          <th>Portfolio</th>
+          <td>{{ .portfolio_since_inception | default "n/a" }}</td>
+          <td>{{ .current_drawdown | default "n/a" }}</td>
+          <td>{{ .max_drawdown | default "n/a" }}</td>
+        </tr>
+        <tr>
+          <th>SP500TR</th>
+          <td>{{ .benchmark_since_inception | default "n/a" }}</td>
+          <td>{{ .benchmark_current_drawdown | default "n/a" }}</td>
+          <td>{{ .benchmark_max_drawdown | default "n/a" }}</td>
+        </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  </div>
 </section>
-<div class="table-wrap">
-  <table class="archive-table">
-    <thead>
-      <tr>
-        <th>Month</th>
-        <th>1M</th>
-        <th>3M</th>
-        <th>12M</th>
-        <th>PDF</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{ range $records }}
-      <tr>
-        <td><a href="{{ .pdf_url }}">{{ .month_covered }}</a></td>
-        <td>{{ .portfolio_1m | default "n/a" }}</td>
-        <td>{{ .portfolio_3m | default "n/a" }}</td>
-        <td>{{ .portfolio_12m | default "n/a" }}</td>
-        <td><a href="{{ .pdf_url }}">Open</a></td>
-      </tr>
-      {{ end }}
-    </tbody>
-  </table>
-</div>
+<section class="archive-section">
+  <h2>Monthly Automated Records</h2>
+  <div class="table-wrap">
+    <table class="archive-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>1M</th>
+          <th>3M</th>
+          <th>12M</th>
+          <th>PDF</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range $records }}
+        <tr>
+          <td><a href="{{ .pdf_url }}">{{ .month_covered }}</a></td>
+          <td>{{ .portfolio_1m | default "n/a" }}</td>
+          <td>{{ .portfolio_3m | default "n/a" }}</td>
+          <td>{{ .portfolio_12m | default "n/a" }}</td>
+          <td><a href="{{ .pdf_url }}">Open</a></td>
+        </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  </div>
+</section>
 {{ end }}

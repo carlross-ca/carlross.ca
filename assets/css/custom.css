@@ -106,6 +106,83 @@ h2 {
 
 .lede.small { max-width: 780px; font-size: 18px; }
 
+.record-dates {
+  display: flex;
+  gap: 34px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.record-dates div {
+  display: grid;
+  gap: 8px;
+}
+
+.record-dates span,
+.summary-table th {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.record-dates strong {
+  font-size: 30px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.record-dates .reference-date {
+  color: var(--bad);
+}
+
+.summary-table-wrap {
+  margin-top: 26px;
+  border: 1px solid var(--line);
+  overflow-x: auto;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--paper);
+  font-family: var(--sans);
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+
+.summary-table th:first-child,
+.summary-table td:first-child {
+  text-align: left;
+}
+
+.summary-table tbody tr:last-child th,
+.summary-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.summary-table td {
+  font-size: 26px;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.archive-section {
+  padding: 34px 0 0;
+}
+
+.archive-section h2 {
+  margin-bottom: 18px;
+  font-size: clamp(28px, 4vw, 42px);
+}
+
 .record-summary {
   display: grid;
   grid-template-columns: minmax(220px, 0.9fr) repeat(3, minmax(130px, 1fr));

@@ -17,18 +17,18 @@ The public record shows:
 - S&P 500 Total Return benchmark in CAD
 - Difference versus benchmark
 - Drawdown
-- Risk breach days from a custom monitoring framework
 - Return drivers as percent of beginning NAV
+- A custom daily risk monitoring framework
 
 Returns are CAD-based and time-weighted. External cash flows are separated from performance so the return record reflects portfolio results.
 
-Performance records are monthly and automated after reporting checks pass. Each monthly record includes 1 month, trailing 3 month, trailing 12 month, and since-inception figures. Quarter-end and year-end performance are therefore embedded in the monthly record.
+Performance records are monthly and automated. Each monthly record includes four reporting periods: trailing 1 month, 3 month, 12 month, and since-inception. Quarter-end and year-end performance are therefore embedded in the monthly record. Each period has three sections: Performance Path, NAV Return Drivers, and Risk Breach Days.
 
 ## Method
 
 The portfolio uses ETFs as the base and options selectively when the risk/reward is worth documenting.
 
-The goal is to make the process legible. The automated record keeps me honest because every month uses the same format. Manual PM notes are separate and optional, only worth writing when there is judgment to add.
+The goal is to make the process legible. The automated record keeps me honest because the same format is used every month. Manual PM notes are separate and optional because they are only worth writing when there is judgment to add.
 
 ## Risk
 
