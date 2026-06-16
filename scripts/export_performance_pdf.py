@@ -259,6 +259,13 @@ def asof_payload(conn: sqlite3.Connection, label: str, path: list[sqlite3.Row], 
     payload["risk_months"] = risk_months_between(conn, payload["start_date"], payload["end_date"])
     days = sorted({int(r["total_days"]) for r in payload["risk_rows"] if r.get("total_days") is not None})
     payload["risk_total_days"] = days[0] if len(days) == 1 else None
+    if label == "Since Inception":
+        current_dd, max_dd = drawdown_asof(conn, INCEPTION_DATE, payload["end_date"])
+        benchmark_current_dd, benchmark_max_dd = benchmark_drawdown_asof(conn, INCEPTION_DATE, payload["end_date"])
+        payload["drawdowns"] = [
+            ["Portfolio", pct(current_dd), pct(max_dd)],
+            ["S&P 500 TR", pct(benchmark_current_dd), pct(benchmark_max_dd)],
+        ]
     return payload
 
 
@@ -347,7 +354,7 @@ def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
     pdf = Pdf()
     pdf.page()
     pdf.centered_text(430, title, 26, INK, True)
-    pdf.centered_text(398, "USD-first attribution; public record", 12, MUTED)
+    pdf.centered_text(398, "CAD TWR; attribution as percent of beginning NAV", 12, MUTED)
     pdf.centered_text(374, "carlross.ca", 11, MUTED)
 
     for p in periods:
@@ -356,34 +363,47 @@ def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
         pdf.centered_text(728, f"Beg Date: {p['start_date']}    End Date: {p['end_date']}", 10, MUTED)
         pdf.line(42, 718, 570, 718)
 
-        section_title(pdf, 696, "Performance Path")
-        path_chart(pdf, 42, 678, 318, 145, p)
+        section_title(pdf, 696, "Performance")
+        path_chart(pdf, 42, 678, 316, 138, p)
         table(pdf, 374, 626, [52, 54, 58], ["Portfolio", "S&P TR", "Diff"], [[p["portfolio"], p["benchmark"], p["excess"]]], 18)
 
-        section_title(pdf, 498, "Attribution")
-        driver_chart(pdf, 42, 480, 318, 145, p.get("drivers", []))
+        section_title(pdf, 510, "Attribution", "Percent of beginning NAV")
+        driver_chart(pdf, 42, 492, 316, 128, p.get("drivers", []))
         table(
             pdf,
             374,
-            454,
+            466,
             [98, 66],
             ["Line", "% Beg NAV"],
-            [[d["label"], d["display"]] for d in p.get("drivers", [])[:8]],
+            [[d["label"], d["display"]] for d in p.get("drivers", [])[:4]],
             15,
         )
 
-        section_title(pdf, 300, "Risk Breach Days")
-        risk_chart(pdf, 42, 270, 214, 140, p.get("risk_months", []))
+        section_title(pdf, 318, "Risk", "Breach days")
+        risk_chart(pdf, 42, 290, 214, 118, p.get("risk_months", []))
+        risk_rows = sorted(p.get("risk_rows", []), key=lambda r: int(r["breach_days"] or 0), reverse=True)[:3]
         table(
             pdf,
             268,
-            264,
+            282,
             [84, 40, 42, 66, 46],
             ["Metric", "Avg", "Median", "Limit", "Breaches"],
-            [[r["metric"], r["avg"], r["median"], r["limit"], r["breach_days"]] for r in p.get("risk_rows", [])],
+            [[r["metric"], r["avg"], r["median"], r["limit"], r["breach_days"]] for r in risk_rows],
             16,
             8,
         )
+        if p.get("drawdowns"):
+            section_title(pdf, 124, "Since-Inception Drawdown")
+            table(
+                pdf,
+                174,
+                100,
+                [88, 82, 82],
+                ["Series", "Current", "Max"],
+                p["drawdowns"],
+                16,
+                8,
+            )
         pdf.centered_text(36, f"carlross.ca | {title}", 9, MUTED)
     pdf.save(path)
 

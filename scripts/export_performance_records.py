@@ -199,16 +199,40 @@ def risk_months(conn: sqlite3.Connection, period_key: str) -> list[dict]:
     return [{"month": r["month"], "breaches": int(r["breaches"] or 0)} for r in found]
 
 
-def drawdown(conn: sqlite3.Connection) -> tuple[float | None, float | None]:
+def drawdown(conn: sqlite3.Connection, end_date: str | None = None) -> tuple[float | None, float | None]:
+    date_filter = "AND date <= ?" if end_date else ""
+    args = (end_date, end_date) if end_date else ()
     found = row(
         conn,
-        """
+        f"""
         SELECT
-          (SELECT drawdown FROM fact_performance_paths_daily WHERE period_key='since_inception' ORDER BY date DESC LIMIT 1) AS current_dd,
+          (SELECT drawdown FROM fact_performance_paths_daily WHERE period_key='since_inception' {date_filter} ORDER BY date DESC LIMIT 1) AS current_dd,
           MIN(drawdown) AS max_dd
         FROM fact_performance_paths_daily
         WHERE period_key='since_inception'
+          {date_filter}
         """,
+        args,
+    )
+    if found is None:
+        return None, None
+    return found["current_dd"], found["max_dd"]
+
+
+def benchmark_drawdown(conn: sqlite3.Connection, end_date: str | None = None) -> tuple[float | None, float | None]:
+    date_filter = "AND date <= ?" if end_date else ""
+    args = (end_date, end_date) if end_date else ()
+    found = row(
+        conn,
+        f"""
+        SELECT
+          (SELECT spx_tr_drawdown_cad FROM fact_performance_paths_daily WHERE period_key='since_inception' {date_filter} ORDER BY date DESC LIMIT 1) AS current_dd,
+          MIN(spx_tr_drawdown_cad) AS max_dd
+        FROM fact_performance_paths_daily
+        WHERE period_key='since_inception'
+          {date_filter}
+        """,
+        args,
     )
     if found is None:
         return None, None
@@ -285,7 +309,7 @@ def report_period_payload(conn: sqlite3.Connection, key: str, label: str) -> dic
     drivers = public_drivers(conn, key)
     risks = risk_rows(conn, key)
     total_days = sorted({int(r["total_days"]) for r in risks if r.get("total_days") is not None})
-    return {
+    payload = {
         "key": label.lower().replace(" ", "_").replace(".", ""),
         "period_key": key,
         "label": label,
@@ -303,6 +327,14 @@ def report_period_payload(conn: sqlite3.Connection, key: str, label: str) -> dic
         "risk_months": risk_months(conn, key),
         "risk_total_days": total_days[0] if len(total_days) == 1 else None,
     }
+    if label == "Since Inception":
+        current_dd, max_dd = drawdown(conn, period["last_date"])
+        benchmark_current_dd, benchmark_max_dd = benchmark_drawdown(conn, period["last_date"])
+        payload["drawdowns"] = [
+            {"series": "Portfolio", "current": pct(current_dd), "max": pct(max_dd)},
+            {"series": "S&P 500 TR", "current": pct(benchmark_current_dd), "max": pct(benchmark_max_dd)},
+        ]
+    return payload
 
 
 def report_periods(conn: sqlite3.Connection, month_key: str) -> list[dict]:
@@ -468,11 +500,11 @@ def write_record(conn: sqlite3.Connection, period_key: str, root: Path) -> dict:
 | 12M | {front["portfolio_12m"]} | {front["benchmark_12m"]} | {front["excess_12m"]} |
 | Since inception | {front["portfolio_since_inception"]} | {front["benchmark_since_inception"]} | {front["excess_since_inception"]} |
 
-## NAV Change Drivers
+## Attribution
 
 Percent of beginning NAV.
 
-| Driver | Contribution |
+| Line | Contribution |
 | --- | ---: |
 {driver_lines}
 

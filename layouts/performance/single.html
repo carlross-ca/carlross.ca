@@ -3,7 +3,7 @@
   <header class="article-head">
     <p class="eyebrow">Automated performance record</p>
     <h1>{{ .Title }}</h1>
-    <p class="muted">CAD. Time-weighted.</p>
+    <p class="muted">CAD TWR. Attribution as percent of beginning NAV.</p>
   </header>
 
   {{ $periods := .Params.report_periods }}
@@ -41,13 +41,13 @@
 
   <section class="report-section">
     <div class="section-head">
-      <h2>NAV Return Drivers</h2>
+      <h2>Attribution</h2>
       <span class="muted">Percent of beginning NAV</span>
     </div>
     <div class="report-pair">
       <figure class="report-figure">
         {{ with .Params.driver_chart }}<img class="driver-fallback" src="{{ . }}" alt="Return drivers as percent of beginning NAV">{{ end }}
-        <svg class="js-driver-chart" viewBox="0 0 720 360" role="img" aria-label="NAV return drivers"></svg>
+        <svg class="js-driver-chart" viewBox="0 0 720 360" role="img" aria-label="Attribution"></svg>
       </figure>
       <div class="table-wrap">
         <table class="js-driver-table">
@@ -80,6 +80,19 @@
           <tbody><tr><td>Total</td><td>{{ .Params.risk_breach_days | default "n/a" }}</td></tr></tbody>
         </table>
       </div>
+    </div>
+  </section>
+
+  <section class="report-section js-drawdown-section" hidden>
+    <div class="section-head">
+      <h2>Since-Inception Drawdown</h2>
+      <span class="muted">Frozen at report end date</span>
+    </div>
+    <div class="table-wrap">
+      <table class="js-drawdown-table">
+        <thead><tr><th>Series</th><th>Current</th><th>Max</th></tr></thead>
+        <tbody></tbody>
+      </table>
     </div>
   </section>
 
@@ -157,9 +170,16 @@
       lineChart(document.querySelector(".js-path-chart"), p.path || []);
       table(document.querySelector(".js-record-table"), ["Measure", "Portfolio", "S&P 500 TR", "Difference"], [["TWR", fmt(p.portfolio), fmt(p.benchmark), fmt(p.excess)]]);
       barChart(document.querySelector(".js-driver-chart"), p.drivers || []);
-      table(document.querySelector(".js-driver-table"), ["Driver", "Contribution"], (p.drivers || []).map((d) => [d.label, d.display]));
+      table(document.querySelector(".js-driver-table"), ["Line", "% Beg NAV"], (p.drivers || []).map((d) => [d.label, d.display]));
       riskChart(document.querySelector(".js-risk-chart"), p.risk_months || []);
-      table(document.querySelector(".js-risk-table"), ["Metric", "Average", "Median", "Breach Limit", "Breach Days"], (p.risk_rows || []).map((r) => [r.metric, r.avg, r.median, r.limit, r.breach_days]));
+      const topRisk = (p.risk_rows || []).slice().sort((a, b) => Number(b.breach_days || 0) - Number(a.breach_days || 0)).slice(0, 3);
+      table(document.querySelector(".js-risk-table"), ["Metric", "Average", "Median", "Breach Limit", "Breach Days"], topRisk.map((r) => [r.metric, r.avg, r.median, r.limit, r.breach_days]));
+      const drawdownSection = document.querySelector(".js-drawdown-section");
+      const drawdowns = p.drawdowns || [];
+      drawdownSection.hidden = drawdowns.length === 0;
+      if (drawdowns.length) {
+        table(document.querySelector(".js-drawdown-table"), ["Series", "Current", "Max"], drawdowns.map((r) => [r.series, r.current, r.max]));
+      }
       document.querySelectorAll(".period-tab").forEach((b) => b.classList.toggle("active", b.dataset.period === p.key));
     }
 
@@ -191,14 +211,14 @@
 
   <section class="report-section">
     <div class="section-head">
-      <h2>NAV Return Drivers</h2>
+      <h2>Attribution</h2>
       <span class="muted">Percent of beginning NAV</span>
     </div>
     <div class="report-pair">
       {{ with .Params.driver_chart }}<figure class="report-figure"><img src="{{ . }}" alt="Return drivers as percent of beginning NAV"></figure>{{ end }}
       <div class="content">
         {{ $content := .Content }}
-        {{ replaceRE `(?s).*?(<h2 id="nav-change-drivers">NAV Change Drivers</h2>.*?)(<h2 id="risk">Risk</h2>.*)` "$1" $content | safeHTML }}
+        {{ replaceRE `(?s).*?(<h2 id="attribution">Attribution</h2>.*?)(<h2 id="risk">Risk</h2>.*)` "$1" $content | safeHTML }}
       </div>
     </div>
   </section>
