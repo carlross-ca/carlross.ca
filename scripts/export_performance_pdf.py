@@ -347,7 +347,7 @@ def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
     pdf = Pdf()
     pdf.page()
     pdf.centered_text(430, title, 26, INK, True)
-    pdf.centered_text(398, "CAD time-weighted", 12, MUTED)
+    pdf.centered_text(398, "USD-first attribution; public record", 12, MUTED)
     pdf.centered_text(374, "carlross.ca", 11, MUTED)
 
     for p in periods:
@@ -360,14 +360,14 @@ def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
         path_chart(pdf, 42, 678, 318, 145, p)
         table(pdf, 374, 626, [52, 54, 58], ["Portfolio", "S&P TR", "Diff"], [[p["portfolio"], p["benchmark"], p["excess"]]], 18)
 
-        section_title(pdf, 498, "NAV Return Drivers")
+        section_title(pdf, 498, "Attribution")
         driver_chart(pdf, 42, 480, 318, 145, p.get("drivers", []))
         table(
             pdf,
             374,
             454,
             [98, 66],
-            ["Driver", "Contribution"],
+            ["Line", "% Beg NAV"],
             [[d["label"], d["display"]] for d in p.get("drivers", [])[:8]],
             15,
         )

@@ -216,6 +216,24 @@ def drawdown(conn: sqlite3.Connection) -> tuple[float | None, float | None]:
 
 
 def public_drivers(conn: sqlite3.Connection, period_key: str) -> list[dict]:
+    info = rows(conn, "PRAGMA table_info(v_report_attribution_period_usd)")
+    if info:
+        found = rows(
+            conn,
+            """
+            SELECT label, pct_start_nav AS value
+            FROM v_report_attribution_period_usd
+            WHERE period_key=?
+            ORDER BY display_order
+            """,
+            (period_key,),
+        )
+        return [
+            {"label": r["label"], "value": float(r["value"] or 0)}
+            for r in found
+            if abs(float(r["value"] or 0)) >= 0.00005 or r["label"] == "Residual"
+        ]
+
     found = row(
         conn,
         """
