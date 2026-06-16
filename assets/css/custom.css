@@ -75,15 +75,29 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
 
 .home-hero {
   border-bottom: 0;
+  padding: 46px 0 64px;
+}
+
+.home-hero > div {
+  width: 100%;
 }
 
 .home-hero .actions {
   padding-bottom: 0;
 }
 
+.hero-note {
+  margin-top: 10px;
+}
+
+.intro-block {
+  width: min(100%, 920px);
+  margin-top: 34px;
+}
+
 .intro-video {
-  width: min(100%, 860px);
-  margin-top: 30px;
+  width: 100%;
+  margin-top: 10px;
   aspect-ratio: 16 / 9;
   border: 1px solid var(--line);
   background: var(--ink);
@@ -94,6 +108,13 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+.video-caption {
+  max-width: 720px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .eyebrow {

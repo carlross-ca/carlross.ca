@@ -9,7 +9,7 @@ pagination.pagerSize = 20
 
 [params]
   author = "Carl Ross"
-  description = "A public performance record for a personal portfolio."
+  description = "Active investing measured against the S&P 500."
   defaultTheme = "light"
   hideFooter = false
 

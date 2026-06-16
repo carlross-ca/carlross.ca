@@ -2,10 +2,10 @@
 title: "About"
 date: 2026-05-01
 draft: false
-summary: "About this public portfolio record."
+summary: "Active investing measured against the S&P 500."
 ---
 
-This site is my public portfolio record. I document a personal portfolio using ETFs and options.
+This site is my public portfolio record: active investing measured against the S&P 500. I document a personal portfolio using ETFs and options.
 
 The portfolio is run from British Columbia, Canada, with my own capital. I do not manage client assets, accept outside capital, or provide investment advice through this site.
 
