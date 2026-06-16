@@ -26,11 +26,18 @@ Performance records are monthly and automated. Each monthly record includes four
 
 ## Method
 
-The portfolio uses ETFs as the base and options selectively when the risk/reward is worth documenting.
+The portfolio uses ETFs, held in USD, as the base and options selectively when the risk/reward is worth documenting.
 
-My current heuristic baseline is 40% SPY, 20% GLD, 20% IBIT, and 20% SGOV, held in USD. It is a reference mix, not a mandate. Tactical allocations can move the portfolio away from that baseline when risk/reward justifies it.
+My current heuristic baseline is:
 
-The goal is to make the process legible. The automated record keeps me honest because the same format is used every month. Manual PM notes are separate and optional because they are only worth writing when there is judgment to add.
+- 40% SPY
+- 20% GLD
+- 20% IBIT
+- 20% SGOV
+
+This baseline is a reference mix. Tactical allocations can move the portfolio away from this mix when risk/reward justifies it.
+
+The goal is to make the process legible. The automated record keeps me honest because the same format is used every month. Manual PM notes on the website, and weekly posts on social media, are separate and optional.
 
 ## Risk
 
