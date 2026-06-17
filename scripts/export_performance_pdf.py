@@ -141,7 +141,7 @@ def table(pdf: Pdf, x: float, y: float, widths: list[float], header: list[str], 
 
 
 def attribution_table(pdf: Pdf, x: float, y: float, rows: list[dict], row_h: float = 15) -> float:
-    widths = [182, 78, 268]
+    widths = [158, 78, 292]
     total_w = sum(widths)
     pdf.rect(x, y - row_h, total_w, row_h, fill=PAPER)
     pdf.text(x + 5, y - 11, "Line", 8, MUTED, True)
@@ -157,8 +157,7 @@ def attribution_table(pdf: Pdf, x: float, y: float, rows: list[dict], row_h: flo
         value = float(r.get("value") or 0)
         pdf.line(x, y, x + total_w, y)
         label = str(r["label"])
-        label_x = x + 5 + (10 if r.get("subline") else 0)
-        pdf.text(label_x, y - 11, label, 8, MUTED if r.get("subline") else INK)
+        pdf.text(x + 5, y - 11, label, 8, INK)
         pdf.text(x + widths[0] + 5, y - 11, r["display"], 8, INK)
         pdf.line(mid, y - 12, mid, y - 3, LINE)
         scaled = min(abs(value) / max_abs, 1.0) * (bar_w * 0.56)
@@ -233,8 +232,8 @@ def core_ticker_attribution(conn: sqlite3.Connection, period_key: str) -> list[d
             FROM v_report_performance_usd
             WHERE period_key=?
         ),
-        core_symbols(symbol) AS (
-            VALUES ('SPY'), ('GLD'), ('IBIT'), ('SGOV')
+        core_symbols(symbol, display_order) AS (
+            VALUES ('SGOV', 1), ('SPY', 2), ('GLD', 3), ('IBIT', 4)
         ),
         start_pos AS (
             SELECT cs.symbol, COALESCE(SUM(ps.quantity * ps.market_price), 0) AS amount_usd
@@ -297,19 +296,17 @@ def core_ticker_attribution(conn: sqlite3.Connection, period_key: str) -> list[d
         LEFT JOIN end_pos e ON e.symbol = cs.symbol
         LEFT JOIN trades t ON t.symbol = cs.symbol
         LEFT JOIN dividends d ON d.symbol = cs.symbol
-        ORDER BY CASE cs.symbol WHEN 'SPY' THEN 1 WHEN 'GLD' THEN 2 WHEN 'IBIT' THEN 3 ELSE 4 END
+        ORDER BY cs.display_order
         """,
         (period_key,),
     )
     return [
         {
-            "label": r["symbol"],
+            "label": "Core " + str(r["symbol"]),
             "value": float(r["pct_start_nav"] or 0),
             "display": signed_pct(float(r["pct_start_nav"] or 0)),
-            "subline": True,
         }
         for r in found
-        if abs(float(r["pct_start_nav"] or 0)) >= 0.00005
     ]
 
 
@@ -408,12 +405,7 @@ def asof_payload(conn: sqlite3.Connection, label: str, path: list[sqlite3.Row], 
     ]
     ticker_lines = core_ticker_attribution(conn, driver_key)
     if ticker_lines:
-        expanded = []
-        for driver in payload["drivers"]:
-            expanded.append(driver)
-            if driver["label"] == "Core long ETFs":
-                expanded.extend(ticker_lines)
-        payload["drivers"] = expanded
+        payload["drivers"] = ticker_lines + [d for d in payload["drivers"] if d["label"] != "Core long ETFs"]
     payload["risk_rows"] = risk_rows_between(conn, payload["start_date"], payload["end_date"])
     payload["risk_months"] = risk_months_between(conn, payload["start_date"], payload["end_date"])
     days = sorted({int(r["total_days"]) for r in payload["risk_rows"] if r.get("total_days") is not None})
@@ -556,7 +548,7 @@ def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
             pdf,
             42,
             214,
-            [136, 62, 62, 196, 72],
+            [160, 56, 56, 172, 84],
             ["Metric", "Avg", "Median", "Limit", "Breaches"],
             [[r["metric"], r["avg"], r["median"], r["limit"], r["breach_days"]] for r in p.get("risk_rows", [])],
             risk_row_h,
@@ -566,15 +558,15 @@ def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
             section_title(pdf, 82, "Since-Inception Drawdown")
             table(
                 pdf,
-                174,
-                60,
-                [88, 82, 82],
+                132,
+                62,
+                [132, 104, 104],
                 ["Series", "Current", "Max"],
                 p["drawdowns"],
                 12,
                 8,
             )
-        pdf.centered_text(7 if p.get("drawdowns") else 36, f"carlross.ca | {title}", 9, MUTED)
+        pdf.centered_text(10 if p.get("drawdowns") else 36, f"carlross.ca | {title}", 9, MUTED)
     pdf.save(path)
 
 
