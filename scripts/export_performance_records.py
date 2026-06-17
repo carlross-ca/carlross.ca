@@ -245,7 +245,7 @@ def public_drivers(conn: sqlite3.Connection, period_key: str) -> list[dict]:
         found = rows(
             conn,
             """
-            SELECT label, pct_start_nav AS value
+            SELECT label, amount_usd, pct_start_nav AS value
             FROM v_report_attribution_period_usd
             WHERE period_key=?
             ORDER BY display_order
@@ -253,7 +253,7 @@ def public_drivers(conn: sqlite3.Connection, period_key: str) -> list[dict]:
             (period_key,),
         )
         return [
-            {"label": r["label"], "value": float(r["value"] or 0)}
+            {"label": r["label"], "amount_usd": float(r["amount_usd"] or 0), "value": float(r["value"] or 0)}
             for r in found
             if abs(float(r["value"] or 0)) >= 0.00005 or r["label"] == "Residual"
         ]
@@ -285,7 +285,7 @@ def public_drivers(conn: sqlite3.Connection, period_key: str) -> list[dict]:
     for label, cad_value in raw:
         value = float(cad_value or 0) / start_nav
         if abs(value) >= 0.00005:
-            out.append({"label": label, "value": value})
+            out.append({"label": label, "amount_usd": None, "value": value})
     return out
 
 

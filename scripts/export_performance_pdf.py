@@ -139,6 +139,13 @@ def table(pdf: Pdf, x: float, y: float, widths: list[float], header: list[str], 
     return y
 
 
+def money(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    sign = "-" if value < 0 else ""
+    return f"{sign}${abs(value):,.2f}"
+
+
 def section_title(pdf: Pdf, y: float, title: str, subtitle: str | None = None) -> None:
     pdf.centered_text(y, title, 16, INK, True)
     if subtitle:
@@ -173,6 +180,24 @@ def path_chart(pdf: Pdf, x: float, y: float, w: float, h: float, period: dict) -
     pdf.text(right - 56, y - h + 12, pts[-1]["date"], 8, MUTED)
     pdf.text(left, y - 12, "Portfolio", 9, PORTFOLIO_RED, True)
     pdf.text(left + 64, y - 12, "S&P 500 TR", 9, SPX_BLUE, True)
+
+
+def usd_performance(conn: sqlite3.Connection, period_key: str) -> dict | None:
+    found = conn.execute(
+        """
+        SELECT portfolio_return_usd, spx_tr_return_usd, excess_return_usd
+        FROM v_report_performance_usd
+        WHERE period_key=?
+        """,
+        (period_key,),
+    ).fetchone()
+    if found is None:
+        return None
+    return {
+        "portfolio": float(found["portfolio_return_usd"] or 0),
+        "benchmark": float(found["spx_tr_return_usd"] or 0),
+        "excess": float(found["excess_return_usd"] or 0),
+    }
 
 
 def driver_chart(pdf: Pdf, x: float, y: float, w: float, h: float, drivers: list[dict]) -> None:
@@ -251,8 +276,22 @@ def asof_payload(conn: sqlite3.Connection, label: str, path: list[sqlite3.Row], 
     payload = score_from_path(label.lower().replace(" ", "_"), label, path)
     if payload is None:
         return None
+    usd = usd_performance(conn, driver_key)
+    if usd:
+        payload["usd_portfolio"] = pct(usd["portfolio"])
+        payload["usd_benchmark"] = pct(usd["benchmark"])
+        payload["usd_excess"] = signed_pct(usd["excess"])
+        cad_portfolio = float(path[-1]["equity_index"] or 100) / 100 - 1
+        cad_benchmark = float(path[-1]["spx_tr_index_cad"] or 100) / 100 - 1
+        payload["portfolio_fx"] = signed_pct(cad_portfolio - usd["portfolio"])
+        payload["benchmark_fx"] = signed_pct(cad_benchmark - usd["benchmark"])
     payload["drivers"] = [
-        {"label": d["label"], "value": round(float(d["value"]), 6), "display": signed_pct(d["value"])}
+        {
+            "label": d["label"],
+            "value": round(float(d["value"]), 6),
+            "display": signed_pct(d["value"]),
+            "amount": money(d.get("amount_usd")),
+        }
         for d in public_drivers(conn, driver_key)
     ]
     payload["risk_rows"] = risk_rows_between(conn, payload["start_date"], payload["end_date"])
@@ -354,7 +393,7 @@ def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
     pdf = Pdf()
     pdf.page()
     pdf.centered_text(430, title, 26, INK, True)
-    pdf.centered_text(398, "CAD TWR; attribution as percent of beginning NAV", 12, MUTED)
+    pdf.centered_text(398, "USD investment return and CAD reporting return", 12, MUTED)
     pdf.centered_text(374, "carlross.ca", 11, MUTED)
 
     for p in periods:
@@ -363,45 +402,64 @@ def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
         pdf.centered_text(728, f"Beg Date: {p['start_date']}    End Date: {p['end_date']}", 10, MUTED)
         pdf.line(42, 718, 570, 718)
 
-        section_title(pdf, 696, "Performance")
-        path_chart(pdf, 42, 678, 316, 138, p)
-        table(pdf, 374, 626, [52, 54, 58], ["Portfolio", "S&P TR", "Diff"], [[p["portfolio"], p["benchmark"], p["excess"]]], 18)
-
-        section_title(pdf, 510, "Attribution", "Percent of beginning NAV")
-        driver_chart(pdf, 42, 492, 316, 128, p.get("drivers", []))
+        section_title(pdf, 696, "Return Summary")
         table(
             pdf,
-            374,
-            466,
-            [98, 66],
-            ["Line", "% Beg NAV"],
-            [[d["label"], d["display"]] for d in p.get("drivers", [])[:4]],
-            15,
+            42,
+            674,
+            [132, 86, 86, 74],
+            ["Measure", "Portfolio", "S&P 500 TR", "Difference"],
+            [
+                ["USD investment TWR", p.get("usd_portfolio", "n/a"), p.get("usd_benchmark", "n/a"), p.get("usd_excess", "n/a")],
+                ["CAD reporting TWR", p["portfolio"], p["benchmark"], p["excess"]],
+            ],
+            17,
+            9,
+        )
+        pdf.text(
+            42,
+            612,
+            f"FX translation: portfolio {p.get('portfolio_fx', 'n/a')}; benchmark {p.get('benchmark_fx', 'n/a')}.",
+            9,
+            MUTED,
         )
 
-        section_title(pdf, 318, "Risk", "Breach days")
-        risk_chart(pdf, 42, 290, 214, 118, p.get("risk_months", []))
-        risk_rows = sorted(p.get("risk_rows", []), key=lambda r: int(r["breach_days"] or 0), reverse=True)[:3]
+        section_title(pdf, 590, "Performance Path", "CAD Growth of $1")
+        path_chart(pdf, 42, 566, 528, 126, p)
+
+        section_title(pdf, 414, "USD Attribution", "P&L and percent of beginning NAV")
         table(
             pdf,
-            268,
-            282,
-            [84, 40, 42, 66, 46],
+            42,
+            386,
+            [180, 100, 96],
+            ["Line", "P&L USD", "% Beg NAV"],
+            [[d["label"], d.get("amount", "n/a"), d["display"]] for d in p.get("drivers", [])[:4]],
+            15,
+            9,
+        )
+
+        section_title(pdf, 292, "Risk Dashboard", "Custom operating limits; breach days show time outside target range")
+        table(
+            pdf,
+            42,
+            264,
+            [112, 52, 56, 94, 52],
             ["Metric", "Avg", "Median", "Limit", "Breaches"],
-            [[r["metric"], r["avg"], r["median"], r["limit"], r["breach_days"]] for r in risk_rows],
-            16,
+            [[r["metric"], r["avg"], r["median"], r["limit"], r["breach_days"]] for r in p.get("risk_rows", [])],
+            14,
             8,
         )
         if p.get("drawdowns"):
-            section_title(pdf, 124, "Since-Inception Drawdown")
+            section_title(pdf, 108, "Since-Inception Drawdown")
             table(
                 pdf,
                 174,
-                100,
+                86,
                 [88, 82, 82],
                 ["Series", "Current", "Max"],
                 p["drawdowns"],
-                16,
+                14,
                 8,
             )
         pdf.centered_text(36, f"carlross.ca | {title}", 9, MUTED)
