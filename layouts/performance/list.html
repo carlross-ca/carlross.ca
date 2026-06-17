@@ -1,7 +1,7 @@
 {{ define "main" }}
 {{ $records := site.Data.performance_records }}
-{{ $latest := false }}
-{{ if $records }}{{ $latest = index $records (sub (len $records) 1) }}{{ end }}
+{{ $latest := site.Data.latest_performance }}
+{{ if and (not $latest) $records }}{{ $latest = index $records (sub (len $records) 1) }}{{ end }}
 {{ $inceptionDate := "2026-05-01" }}
 {{ if $latest }}{{ $inceptionDate = $latest.inception_date | default $inceptionDate }}{{ end }}
 {{ $referenceDate := "" }}
@@ -45,6 +45,12 @@
           <td>{{ .benchmark_since_inception | default "n/a" }}</td>
           <td>{{ .benchmark_current_drawdown | default "n/a" }}</td>
           <td>{{ .benchmark_max_drawdown | default "n/a" }}</td>
+        </tr>
+        <tr>
+          <th>Difference</th>
+          <td>{{ .excess_since_inception | default "n/a" }}</td>
+          <td>{{ .drawdown_difference | default "n/a" }}</td>
+          <td>{{ .max_drawdown_difference | default "n/a" }}</td>
         </tr>
         {{ end }}
       </tbody>
