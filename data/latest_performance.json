@@ -1,7 +1,7 @@
 {
   "title": "May 2026 Performance Record",
   "date": "2026-05-29T08:00:00-07:00",
-  "as_of_date": "2026-06-17",
+  "as_of_date": "2026-06-18",
   "inception_date": "2026-05-01",
   "draft": false,
   "month_covered": "May 2026",
@@ -10,11 +10,11 @@
   "excess_1m": "-0.57%",
   "portfolio_3m": "6.04%",
   "portfolio_12m": "6.04%",
-  "portfolio_since_inception": "7.05%",
-  "benchmark_since_inception": "6.24%",
-  "current_drawdown": "-0.49%",
+  "portfolio_since_inception": "8.79%",
+  "benchmark_since_inception": "8.13%",
+  "current_drawdown": "0.00%",
   "max_drawdown": "-6.91%",
-  "benchmark_current_drawdown": "-1.41%",
+  "benchmark_current_drawdown": "0.00%",
   "benchmark_max_drawdown": "-3.93%",
   "risk_breach_days": "65",
   "pdf_url": "/reports/performance/may-2026-performance-record.pdf",
@@ -22,7 +22,7 @@
     "performance"
   ],
   "summary": "PDF public performance record for May 2026.",
-  "excess_since_inception": "+0.81%",
-  "drawdown_difference": "+0.92%",
+  "excess_since_inception": "+0.65%",
+  "drawdown_difference": "0.00%",
   "max_drawdown_difference": "-2.99%"
 }
