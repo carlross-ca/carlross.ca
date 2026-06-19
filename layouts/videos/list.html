@@ -1,0 +1,28 @@
+{{ define "main" }}
+<section class="article-head">
+  <p class="eyebrow">Videos</p>
+  <h1>{{ .Title }}</h1>
+  {{ with .Content }}<div class="content intro">{{ . }}</div>{{ end }}
+</section>
+
+<div class="video-grid">
+  {{ range sort site.Data.videos.videos "date" "desc" }}
+  <article class="video-card">
+    <div class="video-frame">
+      <iframe
+        src="https://www.youtube-nocookie.com/embed/{{ .youtube_id }}"
+        title="{{ .title }}"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen></iframe>
+    </div>
+    <div class="video-copy">
+      <time datetime="{{ .date }}">{{ dateFormat "2006-01-02" .date }}</time>
+      <h2>{{ .title }}</h2>
+      <p>{{ .description }}</p>
+    </div>
+  </article>
+  {{ end }}
+</div>
+{{ end }}

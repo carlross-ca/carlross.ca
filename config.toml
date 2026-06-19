@@ -25,6 +25,11 @@ pagination.pagerSize = 20
     url = "/notes/"
     weight = 20
   [[menu.main]]
+    identifier = "videos"
+    name = "Videos"
+    url = "/videos/"
+    weight = 25
+  [[menu.main]]
     identifier = "about"
     name = "About"
     url = "/about/"

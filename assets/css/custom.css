@@ -90,33 +90,6 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
   margin-top: 10px;
 }
 
-.intro-block {
-  width: min(100%, 920px);
-  margin-top: 34px;
-}
-
-.intro-video {
-  width: 100%;
-  margin-top: 10px;
-  aspect-ratio: 16 / 9;
-  border: 1px solid var(--line);
-  background: var(--ink);
-}
-
-.intro-video iframe {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.video-caption {
-  max-width: 720px;
-  margin: 12px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
 .eyebrow {
   margin: 0 0 10px;
   color: var(--accent);
@@ -516,6 +489,55 @@ figcaption {
 .list-row em { display: block; max-width: 640px; color: var(--muted); font-style: normal; }
 .list-row time { color: var(--muted); font-variant-numeric: tabular-nums; }
 
+.video-grid {
+  display: grid;
+  gap: 28px;
+}
+
+.video-card {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.4fr) minmax(220px, 0.8fr);
+  gap: 18px;
+  align-items: start;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.video-frame {
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  background: var(--ink);
+}
+
+.video-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video-copy time {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.video-copy h2 {
+  margin-top: 8px;
+  font-family: var(--sans);
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 760;
+}
+
+.video-copy p {
+  margin: 12px 0 0;
+  color: var(--muted);
+}
+
 .site-disclaimer {
   max-width: var(--max);
   margin: 0 auto;
@@ -539,7 +561,7 @@ figcaption {
   .metric-grid div:nth-last-child(-n+4) { border-bottom: 1px solid var(--line); }
   .metric-grid div:nth-last-child(-n+2) { border-bottom: 0; }
   .record-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .split, .visual-grid, .report-pair { grid-template-columns: 1fr; }
+  .split, .visual-grid, .report-pair, .video-card { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 520px) {
