@@ -12,7 +12,7 @@
   "portfolio_12m": "6.04%",
   "portfolio_since_inception": "8.19%",
   "benchmark_since_inception": "8.44%",
-  "current_drawdown": "-0.55%",
+  "current_drawdown": "0.00%",
   "max_drawdown": "-6.91%",
   "benchmark_current_drawdown": "0.00%",
   "benchmark_max_drawdown": "-3.93%",
@@ -23,6 +23,6 @@
   ],
   "summary": "PDF public performance record for May 2026.",
   "excess_since_inception": "-0.25%",
-  "drawdown_difference": "-0.55%",
+  "drawdown_difference": "0.00%",
   "max_drawdown_difference": "-2.99%"
 }
