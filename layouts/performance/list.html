@@ -9,7 +9,7 @@
 <section class="article-head">
   <p class="eyebrow">Public record</p>
   <h1>Performance</h1>
-  <p class="lede small">Performance figures are CAD-based and time-weighted.</p>
+  <p class="lede performance-note">Performance figures are pre-tax, converted from USD to CAD and time-weighted.</p>
   <div class="record-dates">
     <div>
       <span>Inception Date</span>
@@ -27,7 +27,7 @@
       <thead>
         <tr>
           <th></th>
-          <th>Since Inc.</th>
+          <th>Since Inc. TWR CAD</th>
           <th>Current DD</th>
           <th>Max DD</th>
         </tr>
@@ -64,9 +64,7 @@
       <thead>
         <tr>
           <th>Month</th>
-          <th>1M</th>
-          <th>3M</th>
-          <th>12M</th>
+          <th>Portfolio TWR CAD</th>
           <th>PDF</th>
         </tr>
       </thead>
@@ -75,8 +73,6 @@
         <tr>
           <td><a href="{{ .pdf_url }}">{{ .month_covered }}</a></td>
           <td>{{ .portfolio_1m | default "n/a" }}</td>
-          <td>{{ .portfolio_3m | default "n/a" }}</td>
-          <td>{{ .portfolio_12m | default "n/a" }}</td>
           <td><a href="{{ .pdf_url }}">Open</a></td>
         </tr>
         {{ end }}

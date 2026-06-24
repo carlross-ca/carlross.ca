@@ -127,6 +127,16 @@ h2 {
 
 .lede.small { max-width: 780px; font-size: 18px; }
 
+.performance-note {
+  display: inline-block;
+  max-width: 980px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 36px;
+  line-height: 1.15;
+}
+
 .record-dates {
   display: flex;
   gap: 34px;
