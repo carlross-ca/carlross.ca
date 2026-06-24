@@ -17,9 +17,11 @@ from export_performance_records import (
     path_points,
     pct,
     public_drivers,
+    metric_breached,
     risk_breaches,
     report_limit_label,
     risk_limit_map,
+    RISK_METRICS,
     rows,
     score,
     signed_pct,
@@ -435,26 +437,17 @@ def risk_daily_between(conn: sqlite3.Connection, start_date: str, end_date: str)
 
 
 def risk_rows_between(conn: sqlite3.Connection, start_date: str, end_date: str) -> list[dict]:
-    metric_defs = [
-        ("asset_delta", "Asset Delta / AUM", "breach_delta"),
-        ("asset_gamma", "Asset Gamma / AUM", "breach_gamma"),
-        ("net_vega", "P&L per +10 IV / AUM", "breach_vega"),
-        ("net_theta", "Annual Theta / AUM", "breach_theta"),
-        ("margin_power", "Margin Cushion / AUM", "breach_margin"),
-        ("open_contracts", "Contracts", "breach_open_contracts"),
-        ("rolling_30d_buy_sell_count", "30d Trade Count", "breach_trade_count"),
-        ("vix", "VIX", "breach_vix"),
-    ]
     daily = risk_daily_between(conn, start_date, end_date)
     limits = risk_limit_map(conn)
     out = []
-    for key, label, breach_key in metric_defs:
+    for key, label in RISK_METRICS:
         values = sorted(float(r[key]) for r in daily if r[key] is not None)
         if not values:
             continue
         n = len(values)
         median = values[n // 2] if n % 2 else (values[n // 2 - 1] + values[n // 2]) / 2
-        breach_days = sum(int(r[breach_key] or 0) for r in daily if breach_key in r.keys() and r[key] is not None)
+        limit = limits.get(key)
+        breach_days = sum(1 for r in daily if r[key] is not None and metric_breached(r[key], limit))
         out.append({
             "metric": label,
             "avg": decimal(sum(values) / n),
@@ -467,24 +460,27 @@ def risk_rows_between(conn: sqlite3.Connection, start_date: str, end_date: str) 
 
 
 def risk_months_between(conn: sqlite3.Connection, start_date: str, end_date: str) -> list[dict]:
-    info = rows(conn, "PRAGMA table_info(v_report_risk_daily)")
-    breach_cols = [r["name"] for r in info if str(r["name"]).startswith("breach_")]
-    if not breach_cols:
-        return []
-    expr = " + ".join(f"COALESCE({c},0)" for c in breach_cols)
-    found = rows(
+    daily = rows(
         conn,
-        f"""
-        SELECT SUBSTR(date,1,7) AS month, SUM({expr}) AS breaches
+        """
+        SELECT *
         FROM v_report_risk_daily
         WHERE period_key='since_inception'
           AND date BETWEEN ? AND ?
-        GROUP BY SUBSTR(date,1,7)
-        ORDER BY month
+        ORDER BY date
         """,
         (start_date, end_date),
     )
-    return [{"month": r["month"], "breaches": int(r["breaches"] or 0)} for r in found]
+    limits = risk_limit_map(conn)
+    by_month: dict[str, int] = {}
+    for r in daily:
+        month = str(r["date"])[:7]
+        by_month.setdefault(month, 0)
+        by_month[month] += sum(
+            1 for key, _label in RISK_METRICS
+            if key in r.keys() and r[key] is not None and metric_breached(r[key], limits.get(key))
+        )
+    return [{"month": month, "breaches": breaches} for month, breaches in sorted(by_month.items())]
 
 
 def pdf_report_periods(conn: sqlite3.Connection, month_key: str) -> list[dict]:

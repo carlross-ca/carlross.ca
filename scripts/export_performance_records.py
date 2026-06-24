@@ -98,14 +98,49 @@ def monthly_period_keys(conn: sqlite3.Connection) -> list[str]:
     return [str(r["period_key"]) for r in found]
 
 
+RISK_METRICS = [
+    ("asset_delta", "Asset Delta / AUM"),
+    ("asset_gamma", "Asset Gamma / AUM"),
+    ("net_vega", "P&L per +10 IV / AUM"),
+    ("net_theta", "Annual Theta / AUM"),
+    ("margin_power", "Margin Cushion / AUM"),
+    ("open_contracts", "Contracts"),
+    ("rolling_30d_buy_sell_count", "30d Trade Count"),
+    ("vix", "VIX"),
+]
+
+
+def metric_breached(value: object, limit: sqlite3.Row | None) -> bool:
+    if limit is None:
+        return False
+    op = limit["good_operator"]
+    if op == "eq_contango":
+        return value != "contango"
+    if value is None:
+        return True
+    v = float(value)
+    lo = limit["good_min"]
+    hi = limit["good_max"]
+    if op == "between":
+        return (lo is not None and v < float(lo)) or (hi is not None and v > float(hi))
+    if op == "lt":
+        return hi is not None and v >= float(hi)
+    if op == "gte":
+        return lo is not None and v < float(lo)
+    return False
+
+
 def risk_breaches(conn: sqlite3.Connection, period_key: str) -> int | None:
-    info = rows(conn, "PRAGMA table_info(v_report_risk_daily)")
-    breach_cols = [r["name"] for r in info if str(r["name"]).startswith("breach_")]
-    if not breach_cols:
+    daily = rows(conn, "SELECT * FROM v_report_risk_daily WHERE period_key=?", (period_key,))
+    if not daily:
         return None
-    expr = " + ".join(f"COALESCE({c},0)" for c in breach_cols)
-    found = row(conn, f"SELECT SUM({expr}) AS breaches FROM v_report_risk_daily WHERE period_key=?", (period_key,))
-    return None if found is None or found["breaches"] is None else int(found["breaches"])
+    limits = risk_limit_map(conn)
+    return sum(
+        1
+        for r in daily
+        for key, _label in RISK_METRICS
+        if key in r.keys() and r[key] is not None and metric_breached(r[key], limits.get(key))
+    )
 
 
 def decimal(value: float | None, places: int = 3) -> str:
@@ -148,26 +183,17 @@ def report_limit_label(key: str, limits: dict[str, sqlite3.Row]) -> str:
 
 
 def risk_rows(conn: sqlite3.Connection, period_key: str) -> list[dict]:
-    metric_defs = [
-        ("asset_delta", "Asset Delta / AUM", "breach_delta"),
-        ("asset_gamma", "Asset Gamma / AUM", "breach_gamma"),
-        ("net_vega", "P&L per +10 IV / AUM", "breach_vega"),
-        ("net_theta", "Annual Theta / AUM", "breach_theta"),
-        ("margin_power", "Margin Cushion / AUM", "breach_margin"),
-        ("open_contracts", "Contracts", "breach_open_contracts"),
-        ("rolling_30d_buy_sell_count", "30d Trade Count", "breach_trade_count"),
-        ("vix", "VIX", "breach_vix"),
-    ]
     daily = rows(conn, "SELECT * FROM v_report_risk_daily WHERE period_key=?", (period_key,))
     limits = risk_limit_map(conn)
     out = []
-    for key, label, breach_key in metric_defs:
+    for key, label in RISK_METRICS:
         values = sorted(float(r[key]) for r in daily if r[key] is not None)
         if not values:
             continue
         n = len(values)
         median = values[n // 2] if n % 2 else (values[n // 2 - 1] + values[n // 2]) / 2
-        breach_days = sum(int(r[breach_key] or 0) for r in daily if breach_key in r.keys() and r[key] is not None)
+        limit = limits.get(key)
+        breach_days = sum(1 for r in daily if r[key] is not None and metric_breached(r[key], limit))
         out.append({
             "metric": label,
             "avg": decimal(sum(values) / n),
@@ -180,23 +206,17 @@ def risk_rows(conn: sqlite3.Connection, period_key: str) -> list[dict]:
 
 
 def risk_months(conn: sqlite3.Connection, period_key: str) -> list[dict]:
-    info = rows(conn, "PRAGMA table_info(v_report_risk_daily)")
-    breach_cols = [r["name"] for r in info if str(r["name"]).startswith("breach_")]
-    if not breach_cols:
-        return []
-    expr = " + ".join(f"COALESCE({c},0)" for c in breach_cols)
-    found = rows(
-        conn,
-        f"""
-        SELECT SUBSTR(date,1,7) AS month, SUM({expr}) AS breaches
-        FROM v_report_risk_daily
-        WHERE period_key=?
-        GROUP BY SUBSTR(date,1,7)
-        ORDER BY month
-        """,
-        (period_key,),
-    )
-    return [{"month": r["month"], "breaches": int(r["breaches"] or 0)} for r in found]
+    daily = rows(conn, "SELECT * FROM v_report_risk_daily WHERE period_key=? ORDER BY date", (period_key,))
+    limits = risk_limit_map(conn)
+    by_month: dict[str, int] = {}
+    for r in daily:
+        month = str(r["date"])[:7]
+        by_month.setdefault(month, 0)
+        by_month[month] += sum(
+            1 for key, _label in RISK_METRICS
+            if key in r.keys() and r[key] is not None and metric_breached(r[key], limits.get(key))
+        )
+    return [{"month": month, "breaches": breaches} for month, breaches in sorted(by_month.items())]
 
 
 def drawdown(conn: sqlite3.Connection, end_date: str | None = None) -> tuple[float | None, float | None]:
