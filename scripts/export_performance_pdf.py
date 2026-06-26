@@ -688,8 +688,6 @@ def main() -> None:
         for record in records:
             by_month[record["month_covered"]] = record
         data_path.write_text(json.dumps(list(by_month.values()), indent=2) + "\n", encoding="utf-8")
-        latest_path = args.site / "data" / "latest_performance.json"
-        latest_path.write_text(json.dumps(records[-1], indent=2) + "\n", encoding="utf-8")
         print(f"wrote {len(records)} PDF performance record(s)")
     finally:
         conn.close()
