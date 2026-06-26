@@ -12,7 +12,7 @@
   <header class="site-header">
     <a class="brand" href="/">{{ .Site.Title }}</a>
     <nav class="nav" aria-label="Main navigation">
-      {{ range .Site.Menus.main }}<a href="{{ .URL }}">{{ .Name }}</a>{{ end }}
+      {{ range .Site.Menus.main }}<a href="{{ .URL }}"{{ with .Params.target }} target="{{ . }}"{{ end }}{{ with .Params.rel }} rel="{{ . }}"{{ end }}>{{ .Name }}</a>{{ end }}
     </nav>
   </header>
   <main class="site-main{{ if .IsHome }} home-main{{ end }}">

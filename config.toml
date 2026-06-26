@@ -27,8 +27,11 @@ pagination.pagerSize = 20
   [[menu.main]]
     identifier = "videos"
     name = "Videos"
-    url = "/videos/"
+    url = "https://www.youtube.com/@carlross-ca"
     weight = 25
+    [menu.main.params]
+      target = "_blank"
+      rel = "noopener noreferrer"
   [[menu.main]]
     identifier = "about"
     name = "About"
