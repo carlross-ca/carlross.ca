@@ -7,8 +7,10 @@ summary: "How to get in touch."
 
 ## Get in touch
 
-The best way to reach me is LinkedIn.
+The best place to reach me is X.
 
-[linkedin.com/in/carlross-ca](https://www.linkedin.com/in/carlross-ca/)
+[x.com/carlross_ca](https://x.com/carlross_ca)
 
-I am happy to hear from people interested in portfolio process, options risk, trading systems, and data pipelines.
+I check X regularly for trading content, and it is a good place to make introductions.
+
+You can also email me at [carljamesross@gmail.com](mailto:carljamesross@gmail.com), but I have to safeguard that inbox. Spam, strange pitches, or abusive messages get blocked immediately.
