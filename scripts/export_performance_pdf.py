@@ -347,10 +347,23 @@ def risk_chart(pdf: Pdf, x: float, y: float, w: float, h: float, months: list[di
         pdf.text(cx - 18, y - h + 12, m["month"], 8, MUTED)
 
 
-def score_from_path(period_key: str, label: str, path: list[sqlite3.Row]) -> dict | None:
+def prior_chart_date(conn: sqlite3.Connection, start_date: str) -> str:
+    found = conn.execute(
+        """
+        SELECT MAX(date) AS date
+        FROM v_core_nav_daily
+        WHERE date < ?
+        """,
+        (start_date,),
+    ).fetchone()
+    return str(found["date"]) if found and found["date"] else start_date
+
+
+def score_from_path(conn: sqlite3.Connection, period_key: str, label: str, path: list[sqlite3.Row]) -> dict | None:
     if not path:
         return None
     last = path[-1]
+    baseline_date = prior_chart_date(conn, str(path[0]["date"]))
     portfolio = float(last["equity_index"] or 100) / 100 - 1
     benchmark = float(last["spx_tr_index_cad"] or 100) / 100 - 1
     return {
@@ -361,7 +374,7 @@ def score_from_path(period_key: str, label: str, path: list[sqlite3.Row]) -> dic
         "portfolio": pct(portfolio),
         "benchmark": pct(benchmark),
         "excess": signed_pct(portfolio - benchmark),
-        "path": path_points(path),
+        "path": [{"date": baseline_date, "portfolio": 100.0, "benchmark": 100.0}] + path_points(path),
     }
 
 
@@ -550,7 +563,7 @@ def asof_path(conn: sqlite3.Connection, end_date: str, row_limit: int | None) ->
 
 
 def asof_payload(conn: sqlite3.Connection, label: str, path: list[sqlite3.Row]) -> dict | None:
-    payload = score_from_path(label.lower().replace(" ", "_"), label, path)
+    payload = score_from_path(conn, label.lower().replace(" ", "_"), label, path)
     if payload is None:
         return None
     usd = usd_performance_between(conn, payload["start_date"], payload["end_date"])
