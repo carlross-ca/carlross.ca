@@ -502,14 +502,15 @@ figcaption {
 .new-marker {
   display: inline-flex;
   align-items: center;
-  min-height: 18px;
-  margin-left: 8px;
-  padding: 0 6px;
-  border: 1px solid var(--bad);
+  min-height: 34px;
+  margin-left: 10px;
+  padding: 0 12px;
+  border: 2px solid var(--bad);
   border-radius: 3px;
-  color: var(--bad);
-  font-size: 11px;
-  font-weight: 780;
+  background: var(--bad);
+  color: var(--paper);
+  font-size: 22px;
+  font-weight: 820;
   line-height: 1;
   vertical-align: middle;
 }
