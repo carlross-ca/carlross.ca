@@ -499,6 +499,21 @@ figcaption {
 .list-row em { display: block; max-width: 640px; color: var(--muted); font-style: normal; }
 .list-row time { color: var(--muted); font-variant-numeric: tabular-nums; }
 
+.new-marker {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  margin-left: 8px;
+  padding: 0 6px;
+  border: 1px solid var(--bad);
+  border-radius: 3px;
+  color: var(--bad);
+  font-size: 11px;
+  font-weight: 780;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 .video-grid {
   display: grid;
   gap: 28px;

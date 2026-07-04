@@ -5,10 +5,13 @@
   {{ with .Content }}<div class="content intro">{{ . }}</div>{{ end }}
 </section>
 <div class="list">
-  {{ range .Pages }}
+  {{ $pages := .Pages.ByDate.Reverse }}
+  {{ $latest := "" }}
+  {{ if $pages }}{{ $latest = (index $pages 0).RelPermalink }}{{ end }}
+  {{ range $pages }}
   <a class="list-row" href="{{ .RelPermalink }}">
     <span>
-      <strong>{{ .Title }}</strong>
+      <strong>{{ .Title }}{{ if eq .RelPermalink $latest }} <span class="new-marker">new</span>{{ end }}</strong>
       <em>{{ .Summary | plainify }}</em>
     </span>
     <time>{{ .Date.Format "2006-01-02" }}</time>

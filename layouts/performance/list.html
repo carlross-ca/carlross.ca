@@ -69,9 +69,11 @@
         </tr>
       </thead>
       <tbody>
+        {{ $latestPdf := "" }}
+        {{ if $records }}{{ $latestPdf = (index $records (sub (len $records) 1)).pdf_url }}{{ end }}
         {{ range $records }}
         <tr>
-          <td><a href="{{ .pdf_url }}">{{ .month_covered }}</a></td>
+          <td><a href="{{ .pdf_url }}">{{ .month_covered }}</a>{{ if eq .pdf_url $latestPdf }} <span class="new-marker">new</span>{{ end }}</td>
           <td>{{ .portfolio_1m | default "n/a" }}</td>
           <td><a href="{{ .pdf_url }}">Open</a></td>
         </tr>
