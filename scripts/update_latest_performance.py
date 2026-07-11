@@ -62,8 +62,10 @@ def write_latest(conn: sqlite3.Connection, site: Path) -> dict:
     payload = load_existing(latest_path)
     payload.update(
         {
+            "title": "Latest Performance Snapshot",
             "as_of_date": latest["date"],
             "inception_date": INCEPTION_DATE,
+            "month_covered": "Latest",
             "portfolio_since_inception": pct(portfolio_return),
             "benchmark_since_inception": pct(benchmark_return),
             "excess_since_inception": signed_pct(portfolio_return - benchmark_return),
@@ -73,6 +75,8 @@ def write_latest(conn: sqlite3.Connection, site: Path) -> dict:
             "benchmark_max_drawdown": pct(benchmark_max_dd),
             "drawdown_difference": signed_pct((current_dd or 0) - (benchmark_current_dd or 0)),
             "max_drawdown_difference": signed_pct((max_dd or 0) - (benchmark_max_dd or 0)),
+            "pdf_url": "",
+            "summary": "Live since-inception performance snapshot.",
         }
     )
     latest_path.parent.mkdir(parents=True, exist_ok=True)
