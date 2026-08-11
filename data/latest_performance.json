@@ -1,7 +1,7 @@
 {
   "title": "Latest Performance Snapshot",
   "date": "2026-05-29T08:00:00-07:00",
-  "as_of_date": "2026-08-07",
+  "as_of_date": "2026-08-10",
   "inception_date": "2026-05-01",
   "draft": false,
   "month_covered": "Latest",
@@ -10,11 +10,11 @@
   "excess_1m": "-0.56%",
   "portfolio_3m": "6.04%",
   "portfolio_12m": "6.04%",
-  "portfolio_since_inception": "14.18%",
-  "benchmark_since_inception": "10.46%",
-  "current_drawdown": "0.00%",
+  "portfolio_since_inception": "17.07%",
+  "benchmark_since_inception": "10.40%",
+  "current_drawdown": "-0.08%",
   "max_drawdown": "-6.91%",
-  "benchmark_current_drawdown": "-0.61%",
+  "benchmark_current_drawdown": "-0.67%",
   "benchmark_max_drawdown": "-3.93%",
   "risk_breach_days": "60",
   "pdf_url": "",
@@ -22,7 +22,7 @@
     "performance"
   ],
   "summary": "Live since-inception performance snapshot.",
-  "excess_since_inception": "+3.72%",
-  "drawdown_difference": "+0.61%",
+  "excess_since_inception": "+6.67%",
+  "drawdown_difference": "+0.58%",
   "max_drawdown_difference": "-2.99%"
 }
