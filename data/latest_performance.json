@@ -10,7 +10,7 @@
   "excess_1m": "-0.56%",
   "portfolio_3m": "6.04%",
   "portfolio_12m": "6.04%",
-  "portfolio_since_inception": "17.07%",
+  "portfolio_since_inception": "14.07%",
   "benchmark_since_inception": "10.40%",
   "current_drawdown": "-0.08%",
   "max_drawdown": "-6.91%",
@@ -22,7 +22,7 @@
     "performance"
   ],
   "summary": "Live since-inception performance snapshot.",
-  "excess_since_inception": "+6.67%",
+  "excess_since_inception": "+3.67%",
   "drawdown_difference": "+0.58%",
   "max_drawdown_difference": "-2.99%"
 }
