@@ -82,6 +82,11 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
   width: 100%;
 }
 
+.home-title {
+  max-width: 1040px;
+  font-size: clamp(40px, 5vw, 68px);
+}
+
 .home-hero .actions {
   padding-bottom: 0;
 }

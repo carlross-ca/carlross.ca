@@ -7,10 +7,9 @@ summary: "How to get in touch."
 
 ## Get in touch
 
-The best place to reach me is X.
+For portfolio-reporting projects, email me with your brokerage, approximate transaction count, reporting goal, and current problem.
 
-[x.com/carlross_ca](https://x.com/carlross_ca)
+- Email: [carljamesross@gmail.com](mailto:carljamesross@gmail.com)
+- Text or voicemail: [778-212-8635](tel:+17782128635)
 
-I check X regularly for trading content, and it is a good place to make introductions.
-
-You can also email me at [carljamesross@gmail.com](mailto:carljamesross@gmail.com), but I have to safeguard that inbox. Spam, strange pitches, or abusive messages get blocked immediately.
+Text or voicemail is welcome and can be easier to distinguish from email spam. General introductions are welcome too.

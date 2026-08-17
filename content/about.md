@@ -7,6 +7,10 @@ summary: "Active investing measured against the S&P 500."
 
 This site is my public portfolio record: active investing measured against the S&P 500. I document a personal portfolio using ETFs and options.
 
+The main research question is: has active trading been worth it after costs, taxes, risk and attention—versus the realistic passive alternative of simply holding the S&P 500?
+
+Complete transaction history makes the process and results verifiable. Current public performance is pre-tax and measured against the S&P 500 Total Return Index in CAD. After-tax measurement remains part of the research.
+
 The portfolio is run from British Columbia, Canada, with my own capital. I do not manage client assets, accept outside capital, or provide investment advice through this site.
 
 ## The Record

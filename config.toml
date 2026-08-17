@@ -9,7 +9,7 @@ pagination.pagerSize = 20
 
 [params]
   author = "Carl Ross"
-  description = "Active investing measured against the S&P 500."
+  description = "A verifiable public record testing whether active trading is worthwhile against the S&P 500 Total Return Index."
   defaultTheme = "light"
   hideFooter = false
 
@@ -36,12 +36,17 @@ pagination.pagerSize = 20
     identifier = "about"
     name = "About"
     url = "/about/"
+    weight = 40
+  [[menu.main]]
+    identifier = "portfolio-reporting"
+    name = "Portfolio Reporting"
+    url = "/portfolio-reporting/"
     weight = 30
   [[menu.main]]
     identifier = "contact"
     name = "Contact"
     url = "/contact/"
-    weight = 40
+    weight = 50
 
 [outputs]
   home = ["HTML", "RSS"]
