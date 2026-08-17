@@ -75,7 +75,8 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
 
 .home-hero {
   border-bottom: 0;
-  padding: 46px 0 64px;
+  min-height: auto;
+  padding: 64px 0 78px;
 }
 
 .home-hero > div {
@@ -84,7 +85,10 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
 
 .home-title {
   max-width: 1040px;
-  font-size: clamp(40px, 5vw, 68px);
+  font-family: var(--sans);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 680;
+  line-height: 1.12;
 }
 
 .home-hero .actions {
@@ -93,6 +97,12 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
 
 .hero-note {
   margin-top: 10px;
+}
+
+.hero-caveat {
+  max-width: 780px;
+  margin: 14px 0 0;
+  font-size: 14px;
 }
 
 .eyebrow {
