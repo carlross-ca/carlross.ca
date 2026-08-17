@@ -9,7 +9,7 @@ summary: "Turn brokerage transactions into an accurate, reviewable portfolio rec
 
 I build custom reporting systems for active traders with options, multiple accounts, multiple currencies, or publishing needs that standard portfolio trackers do not handle cleanly.
 
-If a standard tracker already produces the reporting you need, it will probably be cheaper than hiring me. Custom work makes sense when the data, calculations, benchmark, or recurring output requires a tailored system.
+Custom work makes sense when the data, calculations, benchmark, or recurring output requires a tailored system.
 
 ## Potential project scope
 

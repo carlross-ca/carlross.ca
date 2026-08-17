@@ -76,33 +76,42 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
 .home-hero {
   border-bottom: 0;
   min-height: auto;
-  padding: 64px 0 78px;
+  padding: 76px 0 88px;
 }
 
 .home-hero > div {
   width: 100%;
+  max-width: 1040px;
 }
 
 .home-title {
-  max-width: 1040px;
+  max-width: 900px;
   font-family: var(--sans);
-  font-size: clamp(32px, 4vw, 52px);
-  font-weight: 680;
-  line-height: 1.12;
+  font-size: clamp(40px, 5.6vw, 68px);
+  font-weight: 720;
+  line-height: 1.04;
 }
 
 .home-hero .actions {
   padding-bottom: 0;
 }
 
-.hero-note {
-  margin-top: 10px;
+.home-question {
+  max-width: 900px;
+  margin: 26px 0 0;
+  color: var(--ink);
+  font-size: clamp(20px, 2.3vw, 28px);
+  line-height: 1.38;
 }
 
-.hero-caveat {
+.home-subtitle {
   max-width: 780px;
-  margin: 14px 0 0;
-  font-size: 14px;
+  margin: 24px 0 0;
+  padding-left: 16px;
+  border-left: 3px solid var(--accent);
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.55;
 }
 
 .eyebrow {
