@@ -39,7 +39,7 @@ pagination.pagerSize = 20
     weight = 40
   [[menu.main]]
     identifier = "portfolio-reporting"
-    name = "Portfolio Reporting"
+    name = "Offer"
     url = "/portfolio-reporting/"
     weight = 30
   [[menu.main]]
