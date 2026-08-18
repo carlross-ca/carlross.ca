@@ -111,7 +111,7 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
 
 .home-performance {
   display: grid;
-  grid-template-columns: minmax(170px, 0.34fr) minmax(0, 1.66fr);
+  grid-template-columns: minmax(220px, 0.4fr) minmax(0, 1.6fr);
   gap: 44px;
   align-items: center;
   padding: 92px 0 104px;
@@ -123,6 +123,13 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
   display: flex;
   align-items: center;
   justify-content: flex-start;
+}
+
+.home-performance-action .button {
+  min-height: 52px;
+  padding: 0 24px;
+  font-size: 17px;
+  white-space: nowrap;
 }
 
 .home-report-preview {
@@ -150,29 +157,6 @@ a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; 
 
 .home-report-pdf {
   animation: home-pdf-frame 12s infinite;
-}
-
-.home-report-label {
-  position: absolute;
-  z-index: 3;
-  left: 18px;
-  bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 11px;
-  border-radius: 4px;
-  background: rgba(20, 23, 25, 0.86);
-  color: white;
-  font-size: 12px;
-  font-weight: 720;
-}
-
-.home-report-label span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #8cc3a0;
 }
 
 .home-offer {
