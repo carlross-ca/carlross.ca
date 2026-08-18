@@ -1,31 +1,30 @@
 {{ define "main" }}
-<section class="hero home-hero">
+<section class="home-hero">
   <div>
-    <p class="eyebrow">Public Portfolio Record</p>
     <h1 class="home-title">Has active trading actually been worth it?</h1>
     <p class="home-question">After costs, taxes, risk and attention&mdash;compared with a realistic passive alternative, like simply holding the S&amp;P 500? And how can you verify the answer?</p>
-    <p class="home-subtitle">Current public performance is pre-tax. Follow the record here and the lessons on YouTube. No hype. No selective reporting.</p>
     <div class="actions">
-      <a class="button primary" href="/performance/">View the Public Record</a>
-      <a class="button" href="https://www.youtube.com/@carlross-ca" target="_blank" rel="noopener noreferrer">Watch Video Lessons</a>
+      <a class="button primary" href="/performance/">View Performance</a>
+      <a class="home-text-link" href="#reporting">See How It Is Measured</a>
     </div>
   </div>
 </section>
 
-<section class="split">
-  <div>
-    <p class="eyebrow">Custom portfolio reporting</p>
-    <h2>When a standard tracker is not enough.</h2>
+<section class="home-analytics" id="reporting">
+  <div class="home-analytics-copy">
+    <h2>Know whether you&rsquo;re actually beating the benchmark.</h2>
+    <p>Reconciled transactions, costs, currency, attribution and risk&mdash;connected in one reporting system, then published as a clear monthly record.</p>
   </div>
-  <div>
-    <p>I build custom reporting systems for active traders with options, multiple accounts, multiple currencies, or publishing needs that off-the-shelf trackers do not handle cleanly.</p>
-    <p>Projects can include reconciled transaction history, CAD time-weighted returns, custom benchmark comparison, costs and currency attribution, risk reporting, and automated monthly reports.</p>
-    <p>Reporting and measurement only&mdash;not investment advice or portfolio management.</p>
-    <div class="actions">
-      <a class="button primary" href="/portfolio-reporting/">View Reporting Services</a>
-      <a class="button" href="/contact/">Discuss a Project</a>
-    </div>
+
+  <div class="home-report-preview" aria-label="Dashboard and monthly report preview">
+    <img class="home-report-image home-report-dashboard" src="/images/home-report-dashboard.webp" alt="Portfolio dashboard comparing performance with the S&amp;P 500 total return benchmark">
+    <img class="home-report-image home-report-pdf" src="/images/home-report-pdf.webp" alt="Monthly portfolio report showing returns, attribution and risk">
+    <div class="home-report-label"><span aria-hidden="true"></span>Dashboard &rarr; monthly report</div>
   </div>
 </section>
 
+<section class="home-about">
+  <h2>I built the reporting system I needed.</h2>
+  <a class="home-text-link" href="/about/">About the Project</a>
+</section>
 {{ end }}
