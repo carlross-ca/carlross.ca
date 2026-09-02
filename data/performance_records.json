@@ -73,5 +73,30 @@
       "performance"
     ],
     "summary": "PDF public performance record for July 2026."
+  },
+  {
+    "title": "August 2026 Performance Record",
+    "date": "2026-08-31T08:00:00-07:00",
+    "as_of_date": "2026-08-31",
+    "inception_date": "2026-05-01",
+    "draft": false,
+    "month_covered": "August 2026",
+    "portfolio_1m": "9.96%",
+    "benchmark_1m": "1.53%",
+    "excess_1m": "+8.43%",
+    "portfolio_3m": "19.61%",
+    "portfolio_12m": "19.61%",
+    "portfolio_since_inception": "19.61%",
+    "benchmark_since_inception": "8.93%",
+    "current_drawdown": "-0.88%",
+    "max_drawdown": "-6.91%",
+    "benchmark_current_drawdown": "-1.99%",
+    "benchmark_max_drawdown": "-3.93%",
+    "risk_breach_days": "44",
+    "pdf_url": "/reports/performance/aug-2026-performance-record.pdf",
+    "tags": [
+      "performance"
+    ],
+    "summary": "PDF public performance record for August 2026."
   }
 ]
