@@ -892,7 +892,10 @@ def main() -> None:
     conn.row_factory = sqlite3.Row
     try:
         if args.completed_month == "previous":
-            period_keys = [period_key_for_previous_month(date.today())]
+            previous_key = period_key_for_previous_month(date.today())
+            if previous_key not in completed_monthly_period_keys(conn):
+                raise SystemExit(f"Previous month is not complete in the database: {previous_key}")
+            period_keys = [previous_key]
         elif args.period_key:
             period_keys = [args.period_key]
         else:
