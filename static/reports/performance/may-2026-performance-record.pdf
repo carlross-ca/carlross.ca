@@ -31,15 +31,15 @@ BT /F2 10 Tf 0.370 0.400 0.420 rg 451.0 662.0 Td (Difference) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 657.0 m 570.0 657.0 l S
 BT /F1 10 Tf 0.080 0.090 0.100 rg 47.0 645.0 Td (USD investment TWR) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 207.0 645.0 Td (4.71%) Tj ET
-BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 645.0 Td (4.95%) Tj ET
-BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 645.0 Td (-0.25%) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 645.0 Td (5.26%) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 645.0 Td (-0.56%) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 640.0 m 570.0 640.0 l S
 BT /F1 10 Tf 0.080 0.090 0.100 rg 47.0 628.0 Td (CAD reporting TWR) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 207.0 628.0 Td (6.04%) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 628.0 Td (6.61%) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 628.0 Td (-0.56%) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 623.0 528.0 51.0 re S
-BT /F1 10 Tf 0.080 0.090 0.100 rg 42.0 610.0 Td (USD to CAD conversion effect on TWR: Portfolio +1.34%; S&P 500 TR +1.65%.) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 42.0 610.0 Td (USD to CAD conversion effect on TWR: Portfolio +1.34%; S&P 500 TR +1.34%.) Tj ET
 BT /F2 16 Tf 0.080 0.090 0.100 rg 226.0 586.0 Td (CAD Performance Path) Tj ET
 BT /F1 10 Tf 0.370 0.400 0.420 rg 276.0 570.0 Td (Growth of $1) Tj ET
 0.980 0.980 0.960 rg 0.840 0.820 0.770 RG 0.60 w 42.0 442.0 528.0 120.0 re B
@@ -140,7 +140,7 @@ BT /F1 8 Tf 0.080 0.090 0.100 rg 491.0 137.0 Td (9) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 47.0 124.0 Td (Contracts) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 207.0 124.0 Td (3.000) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 263.0 124.0 Td (3.000) Tj ET
-BT /F1 8 Tf 0.080 0.090 0.100 rg 319.0 124.0 Td (1 to 4) Tj ET
+BT /F1 8 Tf 0.080 0.090 0.100 rg 319.0 124.0 Td (0 to 4) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 491.0 124.0 Td (3) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 123.0 m 570.0 123.0 l S
 BT /F1 8 Tf 0.080 0.090 0.100 rg 47.0 111.0 Td (30d Trade Count) Tj ET
@@ -176,15 +176,15 @@ BT /F2 10 Tf 0.370 0.400 0.420 rg 451.0 662.0 Td (Difference) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 657.0 m 570.0 657.0 l S
 BT /F1 10 Tf 0.080 0.090 0.100 rg 47.0 645.0 Td (USD investment TWR) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 207.0 645.0 Td (4.71%) Tj ET
-BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 645.0 Td (4.95%) Tj ET
-BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 645.0 Td (-0.25%) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 645.0 Td (5.26%) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 645.0 Td (-0.56%) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 640.0 m 570.0 640.0 l S
 BT /F1 10 Tf 0.080 0.090 0.100 rg 47.0 628.0 Td (CAD reporting TWR) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 207.0 628.0 Td (6.04%) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 628.0 Td (6.61%) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 628.0 Td (-0.56%) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 623.0 528.0 51.0 re S
-BT /F1 10 Tf 0.080 0.090 0.100 rg 42.0 610.0 Td (USD to CAD conversion effect on TWR: Portfolio +1.34%; S&P 500 TR +1.65%.) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 42.0 610.0 Td (USD to CAD conversion effect on TWR: Portfolio +1.34%; S&P 500 TR +1.34%.) Tj ET
 BT /F2 16 Tf 0.080 0.090 0.100 rg 226.0 586.0 Td (CAD Performance Path) Tj ET
 BT /F1 10 Tf 0.370 0.400 0.420 rg 276.0 570.0 Td (Growth of $1) Tj ET
 0.980 0.980 0.960 rg 0.840 0.820 0.770 RG 0.60 w 42.0 442.0 528.0 120.0 re B
@@ -285,7 +285,7 @@ BT /F1 8 Tf 0.080 0.090 0.100 rg 491.0 137.0 Td (9) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 47.0 124.0 Td (Contracts) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 207.0 124.0 Td (3.000) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 263.0 124.0 Td (3.000) Tj ET
-BT /F1 8 Tf 0.080 0.090 0.100 rg 319.0 124.0 Td (1 to 4) Tj ET
+BT /F1 8 Tf 0.080 0.090 0.100 rg 319.0 124.0 Td (0 to 4) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 491.0 124.0 Td (3) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 123.0 m 570.0 123.0 l S
 BT /F1 8 Tf 0.080 0.090 0.100 rg 47.0 111.0 Td (30d Trade Count) Tj ET
@@ -321,15 +321,15 @@ BT /F2 10 Tf 0.370 0.400 0.420 rg 451.0 662.0 Td (Difference) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 657.0 m 570.0 657.0 l S
 BT /F1 10 Tf 0.080 0.090 0.100 rg 47.0 645.0 Td (USD investment TWR) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 207.0 645.0 Td (4.71%) Tj ET
-BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 645.0 Td (4.95%) Tj ET
-BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 645.0 Td (-0.25%) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 645.0 Td (5.26%) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 645.0 Td (-0.56%) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 640.0 m 570.0 640.0 l S
 BT /F1 10 Tf 0.080 0.090 0.100 rg 47.0 628.0 Td (CAD reporting TWR) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 207.0 628.0 Td (6.04%) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 628.0 Td (6.61%) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 628.0 Td (-0.56%) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 623.0 528.0 51.0 re S
-BT /F1 10 Tf 0.080 0.090 0.100 rg 42.0 610.0 Td (USD to CAD conversion effect on TWR: Portfolio +1.34%; S&P 500 TR +1.65%.) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 42.0 610.0 Td (USD to CAD conversion effect on TWR: Portfolio +1.34%; S&P 500 TR +1.34%.) Tj ET
 BT /F2 16 Tf 0.080 0.090 0.100 rg 226.0 586.0 Td (CAD Performance Path) Tj ET
 BT /F1 10 Tf 0.370 0.400 0.420 rg 276.0 570.0 Td (Growth of $1) Tj ET
 0.980 0.980 0.960 rg 0.840 0.820 0.770 RG 0.60 w 42.0 442.0 528.0 120.0 re B
@@ -430,7 +430,7 @@ BT /F1 8 Tf 0.080 0.090 0.100 rg 491.0 137.0 Td (9) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 47.0 124.0 Td (Contracts) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 207.0 124.0 Td (3.000) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 263.0 124.0 Td (3.000) Tj ET
-BT /F1 8 Tf 0.080 0.090 0.100 rg 319.0 124.0 Td (1 to 4) Tj ET
+BT /F1 8 Tf 0.080 0.090 0.100 rg 319.0 124.0 Td (0 to 4) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 491.0 124.0 Td (3) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 123.0 m 570.0 123.0 l S
 BT /F1 8 Tf 0.080 0.090 0.100 rg 47.0 111.0 Td (30d Trade Count) Tj ET
@@ -466,15 +466,15 @@ BT /F2 10 Tf 0.370 0.400 0.420 rg 451.0 662.0 Td (Difference) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 657.0 m 570.0 657.0 l S
 BT /F1 10 Tf 0.080 0.090 0.100 rg 47.0 645.0 Td (USD investment TWR) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 207.0 645.0 Td (4.71%) Tj ET
-BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 645.0 Td (4.95%) Tj ET
-BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 645.0 Td (-0.25%) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 645.0 Td (5.26%) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 645.0 Td (-0.56%) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 640.0 m 570.0 640.0 l S
 BT /F1 10 Tf 0.080 0.090 0.100 rg 47.0 628.0 Td (CAD reporting TWR) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 207.0 628.0 Td (6.04%) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 329.0 628.0 Td (6.61%) Tj ET
 BT /F1 10 Tf 0.080 0.090 0.100 rg 451.0 628.0 Td (-0.56%) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 623.0 528.0 51.0 re S
-BT /F1 10 Tf 0.080 0.090 0.100 rg 42.0 610.0 Td (USD to CAD conversion effect on TWR: Portfolio +1.34%; S&P 500 TR +1.65%.) Tj ET
+BT /F1 10 Tf 0.080 0.090 0.100 rg 42.0 610.0 Td (USD to CAD conversion effect on TWR: Portfolio +1.34%; S&P 500 TR +1.34%.) Tj ET
 BT /F2 16 Tf 0.080 0.090 0.100 rg 226.0 586.0 Td (CAD Performance Path) Tj ET
 BT /F1 10 Tf 0.370 0.400 0.420 rg 276.0 570.0 Td (Growth of $1) Tj ET
 0.980 0.980 0.960 rg 0.840 0.820 0.770 RG 0.60 w 42.0 442.0 528.0 120.0 re B
@@ -575,7 +575,7 @@ BT /F1 8 Tf 0.080 0.090 0.100 rg 491.0 150.0 Td (9) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 47.0 138.0 Td (Contracts) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 207.0 138.0 Td (3.000) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 263.0 138.0 Td (3.000) Tj ET
-BT /F1 8 Tf 0.080 0.090 0.100 rg 319.0 138.0 Td (1 to 4) Tj ET
+BT /F1 8 Tf 0.080 0.090 0.100 rg 319.0 138.0 Td (0 to 4) Tj ET
 BT /F1 8 Tf 0.080 0.090 0.100 rg 491.0 138.0 Td (3) Tj ET
 0.840 0.820 0.770 RG 0.60 w 42.0 138.0 m 570.0 138.0 l S
 BT /F1 8 Tf 0.080 0.090 0.100 rg 47.0 126.0 Td (30d Trade Count) Tj ET

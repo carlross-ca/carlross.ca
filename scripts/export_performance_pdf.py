@@ -13,8 +13,6 @@ from export_performance_records import (
     DEFAULT_DB,
     ROOT,
     decimal,
-    monthly_period_keys,
-    path_points,
     pct,
     metric_breached,
     risk_breaches,
@@ -363,9 +361,29 @@ def score_from_path(conn: sqlite3.Connection, period_key: str, label: str, path:
     if not path:
         return None
     last = path[-1]
-    baseline_date = prior_chart_date(conn, str(path[0]["date"]))
-    portfolio = float(last["equity_index"] or 100) / 100 - 1
-    benchmark = float(last["spx_tr_index_cad"] or 100) / 100 - 1
+    baseline = conn.execute(
+        """
+        SELECT date, equity_index, spx_tr_index_cad
+        FROM fact_performance_paths_daily
+        WHERE period_key='since_inception' AND date < ?
+        ORDER BY date DESC
+        LIMIT 1
+        """,
+        (path[0]["date"],),
+    ).fetchone()
+    baseline_date = str(baseline["date"]) if baseline else prior_chart_date(conn, str(path[0]["date"]))
+    portfolio_base = float(baseline["equity_index"] or 100) if baseline else 100.0
+    benchmark_base = float(baseline["spx_tr_index_cad"] or 100) if baseline else 100.0
+    portfolio = float(last["equity_index"] or portfolio_base) / portfolio_base - 1
+    benchmark = float(last["spx_tr_index_cad"] or benchmark_base) / benchmark_base - 1
+    rebased_path = [
+        {
+            "date": str(r["date"]),
+            "portfolio": round(float(r["equity_index"] or portfolio_base) / portfolio_base * 100, 4),
+            "benchmark": round(float(r["spx_tr_index_cad"] or benchmark_base) / benchmark_base * 100, 4),
+        }
+        for r in path
+    ]
     return {
         "period_key": period_key,
         "label": label,
@@ -374,7 +392,9 @@ def score_from_path(conn: sqlite3.Connection, period_key: str, label: str, path:
         "portfolio": pct(portfolio),
         "benchmark": pct(benchmark),
         "excess": signed_pct(portfolio - benchmark),
-        "path": [{"date": baseline_date, "portfolio": 100.0, "benchmark": 100.0}] + path_points(path),
+        "portfolio_value": portfolio,
+        "benchmark_value": benchmark,
+        "path": [{"date": baseline_date, "portfolio": 100.0, "benchmark": 100.0}] + rebased_path,
     }
 
 
@@ -406,9 +426,15 @@ def usd_performance_between(conn: sqlite3.Connection, start_date: str, end_date:
             (SELECT prior_nav_usd FROM daily ORDER BY date ASC LIMIT 1) AS nav_start_usd,
             (SELECT nav_usd FROM daily ORDER BY date DESC LIMIT 1) AS nav_end_usd,
             SUM(external_flow_usd) AS external_flows_usd,
-            (SELECT value FROM fact_market_data m
-              WHERE m.ticker = 'SP500TR'
-                AND m.date = (SELECT MIN(date) FROM daily)) AS spx_start,
+            COALESCE(
+              (SELECT value FROM fact_market_data m
+                WHERE m.ticker = 'SP500TR'
+                  AND m.date < (SELECT MIN(date) FROM daily)
+                ORDER BY m.date DESC LIMIT 1),
+              (SELECT value FROM fact_market_data m
+                WHERE m.ticker = 'SP500TR'
+                  AND m.date = (SELECT MIN(date) FROM daily))
+            ) AS spx_start,
             (SELECT value FROM fact_market_data m
               WHERE m.ticker = 'SP500TR'
                 AND m.date = (SELECT MAX(date) FROM daily)) AS spx_end
@@ -544,9 +570,33 @@ def drivers_between(conn: sqlite3.Connection, start_date: str, end_date: str, pe
     ]
 
 
-def asof_path(conn: sqlite3.Connection, end_date: str, row_limit: int | None) -> list[sqlite3.Row]:
-    args: tuple = (end_date,) if row_limit is None else (end_date, row_limit)
-    limit_sql = "" if row_limit is None else "LIMIT ?"
+def calendar_lookback_start(end_date: str, months: int) -> str:
+    end = date.fromisoformat(end_date)
+    month_index = end.year * 12 + end.month - months
+    return date(month_index // 12, month_index % 12 + 1, 1).isoformat()
+
+
+def completed_monthly_period_keys(conn: sqlite3.Connection) -> list[str]:
+    return [
+        str(r["period_key"])
+        for r in rows(
+            conn,
+            """
+            SELECT p.period_key
+            FROM fact_performance_paths_daily p
+            CROSS JOIN v_core_data_freshness f
+            WHERE p.period_type='month'
+            GROUP BY p.period_key
+            HAVING f.latest_account_snapshot_date >= date(MAX(p.period_end_exclusive), '-1 day')
+            ORDER BY MIN(p.date)
+            """,
+        )
+    ]
+
+
+def asof_path(conn: sqlite3.Connection, end_date: str, start_date: str | None = None) -> list[sqlite3.Row]:
+    start_sql = "" if start_date is None else "AND date >= ?"
+    args: tuple = (end_date,) if start_date is None else (end_date, start_date)
     found = rows(
         conn,
         f"""
@@ -554,12 +604,12 @@ def asof_path(conn: sqlite3.Connection, end_date: str, row_limit: int | None) ->
         FROM fact_performance_paths_daily
         WHERE period_key='since_inception'
           AND date <= ?
-        ORDER BY date DESC
-        {limit_sql}
+          {start_sql}
+        ORDER BY date
         """,
         args,
     )
-    return list(reversed(found))
+    return found
 
 
 def asof_payload(conn: sqlite3.Connection, label: str, path: list[sqlite3.Row]) -> dict | None:
@@ -571,8 +621,8 @@ def asof_payload(conn: sqlite3.Connection, label: str, path: list[sqlite3.Row]) 
         payload["usd_portfolio"] = pct(usd["portfolio"])
         payload["usd_benchmark"] = pct(usd["benchmark"])
         payload["usd_excess"] = signed_pct(usd["excess"])
-        cad_portfolio = float(path[-1]["equity_index"] or 100) / 100 - 1
-        cad_benchmark = float(path[-1]["spx_tr_index_cad"] or 100) / 100 - 1
+        cad_portfolio = float(payload["portfolio_value"])
+        cad_benchmark = float(payload["benchmark_value"])
         payload["portfolio_fx"] = signed_pct(cad_portfolio - usd["portfolio"])
         payload["benchmark_fx"] = signed_pct(cad_benchmark - usd["benchmark"])
         payload["drivers"] = drivers_between(conn, payload["start_date"], payload["end_date"], usd)
@@ -659,10 +709,10 @@ def pdf_report_periods(conn: sqlite3.Connection, month_key: str) -> list[dict]:
         return []
     end_date = month["last_date"]
     requested = [
-        asof_payload(conn, "Trailing 1 Month", month["path"]),
-        asof_payload(conn, "Trailing 3 Months", asof_path(conn, end_date, 63)),
-        asof_payload(conn, "Trailing 12 Months", asof_path(conn, end_date, 252)),
-        asof_payload(conn, "Since Inception", asof_path(conn, end_date, None)),
+        asof_payload(conn, "Trailing 1 Month", asof_path(conn, end_date, month["first_date"])),
+        asof_payload(conn, "Trailing 3 Months", asof_path(conn, end_date, calendar_lookback_start(end_date, 3))),
+        asof_payload(conn, "Trailing 12 Months", asof_path(conn, end_date, calendar_lookback_start(end_date, 12))),
+        asof_payload(conn, "Since Inception", asof_path(conn, end_date)),
     ]
     return [p for p in requested if p is not None]
 
@@ -846,7 +896,7 @@ def main() -> None:
         elif args.period_key:
             period_keys = [args.period_key]
         else:
-            period_keys = monthly_period_keys(conn)
+            period_keys = completed_monthly_period_keys(conn)
         records = [write_one(conn, args.site, key) for key in period_keys]
         data_path = args.site / "data" / "performance_records.json"
         data_path.parent.mkdir(parents=True, exist_ok=True)
