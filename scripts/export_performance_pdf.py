@@ -540,18 +540,12 @@ def drivers_between(conn: sqlite3.Connection, start_date: str, end_date: str, pe
     costs = conn.execute(
         """
         SELECT
-            -COALESCE(SUM(t.total_fees_usd), 0)
-            -COALESCE((
-                SELECT SUM(hidden_fx_usd)
-                FROM v_real_income_monthly m
-                WHERE m.month >= substr(?, 1, 7)
-                  AND m.month <= substr(?, 1, 7)
-            ), 0) AS amount_usd
-        FROM v_core_trades t
-        WHERE t.trade_date >= ?
-          AND t.trade_date <= ?
+            -COALESCE(SUM(total_cost_usd), 0) AS amount_usd
+        FROM v_report_costs_daily_usd
+        WHERE date >= ?
+          AND date <= ?
         """,
-        (start_date, end_date, start_date, end_date),
+        (start_date, end_date),
     ).fetchone()
     costs_usd = float(costs["amount_usd"] or 0)
     satellite_usd = float(perf["net_pnl_usd"] or 0) - core_usd - costs_usd
