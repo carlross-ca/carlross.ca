@@ -46,10 +46,16 @@ def load_existing(path: Path) -> dict:
         return {}
 
 
-def write_latest(conn: sqlite3.Connection, site: Path) -> dict:
+def write_latest(conn: sqlite3.Connection, site: Path, expected_date: str | None = None) -> dict:
     latest = latest_since_inception(conn)
     if latest is None:
         raise SystemExit("No since_inception performance path rows found.")
+
+    if expected_date is not None and latest["date"] != expected_date:
+        raise SystemExit(
+            f"Refusing stale performance: expected {expected_date}, found {latest['date']}. "
+            "Check the daily ETL log."
+        )
 
     portfolio_return = float(latest["equity_index"] or 100) / 100 - 1
     benchmark_return = float(latest["spx_tr_index_cad"] or 100) / 100 - 1
@@ -88,12 +94,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--db", type=Path, default=DEFAULT_DB)
     parser.add_argument("--site", type=Path, default=ROOT)
+    parser.add_argument("--expected-date", help="Require this YYYY-MM-DD before writing.")
     args = parser.parse_args()
 
     conn = sqlite3.connect(f"file:{args.db}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
     try:
-        payload = write_latest(conn, args.site)
+        payload = write_latest(conn, args.site, args.expected_date)
         print(f"updated latest performance through {payload['as_of_date']}")
     finally:
         conn.close()
