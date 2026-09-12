@@ -3,7 +3,7 @@
   <header class="article-head">
     <p class="eyebrow">{{ .Section }}</p>
     <h1>{{ .Title }}</h1>
-    <p class="muted">{{ .Date.Format "January 2, 2006" }}</p>
+    {{ if eq .Section "notes" }}<p class="muted">{{ .Date.Format "January 2, 2006" }}</p>{{ end }}
   </header>
   <div class="content">
     {{ .Content }}

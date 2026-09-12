@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
+from datetime import date, timedelta
 import sqlite3
 from pathlib import Path
 
@@ -46,6 +48,30 @@ def load_existing(path: Path) -> dict:
         return {}
 
 
+def performance_chart(conn: sqlite3.Connection) -> dict:
+    rows = conn.execute("SELECT date, equity_index, spx_tr_index_cad FROM fact_performance_paths_daily WHERE period_key='since_inception' ORDER BY date").fetchall()
+    if not rows or rows[0]["date"] != INCEPTION_DATE:
+        raise SystemExit("Performance chart requires the complete inception history.")
+    start = date.fromisoformat(INCEPTION_DATE) - timedelta(days=1)
+    end = date.fromisoformat(rows[-1]["date"])
+    points = [(start, 100.0, 100.0)]
+    for row in rows:
+        values = (row["equity_index"], row["spx_tr_index_cad"])
+        if any(v is None or not math.isfinite(v) or v <= 0 for v in values):
+            raise SystemExit(f"Invalid performance chart values on {row['date']}")
+        points.append((date.fromisoformat(row["date"]), *values))
+    low = math.floor(min(v for _, a, b in points for v in (a, b)) / 5) * 5
+    high = math.ceil(max(v for _, a, b in points for v in (a, b)) / 5) * 5
+    high = max(high, low + 5)
+    def y(value):
+        return 250 - (value - low) / (high - low) * 220
+    def line(column):
+        return " ".join(f"{60 + (point[0]-start).days / max(1,(end-start).days) * 560:.2f},{y(point[column]):.2f}" for point in points)
+    return dict(portfolio=line(1), benchmark=line(2),
+                ticks=[dict(value=v, y=round(y(v), 2)) for v in range(low, high + 1, 5)],
+                start=INCEPTION_DATE, end=end.isoformat(), observations=len(rows))
+
+
 def write_latest(conn: sqlite3.Connection, site: Path, expected_date: str | None = None) -> dict:
     latest = latest_since_inception(conn)
     if latest is None:
@@ -69,6 +95,7 @@ def write_latest(conn: sqlite3.Connection, site: Path, expected_date: str | None
     payload.update(
         {
             "title": "Latest Performance Snapshot",
+            "chart": performance_chart(conn),
             "as_of_date": latest["date"],
             "inception_date": INCEPTION_DATE,
             "month_covered": "Latest",
@@ -86,7 +113,9 @@ def write_latest(conn: sqlite3.Connection, site: Path, expected_date: str | None
         }
     )
     latest_path.parent.mkdir(parents=True, exist_ok=True)
-    latest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    temporary = latest_path.with_suffix(".json.tmp")
+    temporary.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    temporary.replace(latest_path)
     return payload
 
 

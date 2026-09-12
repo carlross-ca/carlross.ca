@@ -9,13 +9,14 @@
   {{ partial "extend_head.html" . }}
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <a class="brand" href="/">{{ .Site.Title }}</a>
     <nav class="nav" aria-label="Main navigation">
       {{ range .Site.Menus.main }}<a href="{{ .URL }}"{{ with .Params.target }} target="{{ . }}"{{ end }}{{ with .Params.rel }} rel="{{ . }}"{{ end }}>{{ .Name }}</a>{{ end }}
     </nav>
   </header>
-  <main class="site-main{{ if .IsHome }} home-main{{ end }}">
+  <main id="main" class="site-main{{ if .IsHome }} home-main{{ end }}">
     {{ block "main" . }}{{ end }}
   </main>
   {{ partial "footer.html" . }}

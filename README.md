@@ -68,3 +68,17 @@ hugo new notes/2026-q2.md
 ```
 
 Use them for judgment, mistakes, process changes, and risk posture. Keep the performance record automated.
+
+### Live chart and daily publishing
+
+`update_latest_performance.py` exports the summary and complete since-inception
+chart together in `data/latest_performance.json`. Both the home and performance
+pages render this data at build time; no browser API, database access, chart CDN,
+or manually maintained screenshot is needed. The existing VPS daily publisher
+already stages this file. Dates, axes, paths, returns, and declines refresh together.
+The exporter rejects stale dates and invalid chart values before replacing the
+file atomically. The historical HTML exporter uses the same live summary writer.
+Monthly PDF publishing remains unchanged.
+
+Run `python3 -m unittest discover -s tests -v` to check daily advancement,
+first-day return inclusion, stale-data rejection, and repeatable exports.

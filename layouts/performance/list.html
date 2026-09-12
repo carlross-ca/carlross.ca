@@ -1,85 +1,30 @@
 {{ define "main" }}
 {{ $records := site.Data.performance_records }}
 {{ $latest := site.Data.latest_performance }}
-{{ if and (not $latest) $records }}{{ $latest = index $records (sub (len $records) 1) }}{{ end }}
-{{ $inceptionDate := "2026-05-01" }}
-{{ if $latest }}{{ $inceptionDate = $latest.inception_date | default $inceptionDate }}{{ end }}
-{{ $referenceDate := "" }}
-{{ if $latest }}{{ $referenceDate = $latest.as_of_date | default ($latest.date | time.Format "2006-01-02") }}{{ end }}
-<section class="article-head">
-  <p class="eyebrow">Public record</p>
-  <h1>Performance</h1>
-  <p class="lede performance-note">Performance figures are pre-tax, converted from USD to CAD and time-weighted.</p>
-  <div class="record-dates">
-    <div>
-      <span>Inception Date</span>
-      <strong>{{ $inceptionDate }}</strong>
-    </div>
-    {{ if $referenceDate }}
-    <div>
-      <span>Reference Date</span>
-      <strong class="reference-date">{{ $referenceDate }}</strong>
-    </div>
-    {{ end }}
-  </div>
-  <div class="summary-table-wrap">
-    <table class="summary-table">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Since Inc. TWR CAD</th>
-          <th>Current DD</th>
-          <th>Max DD</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{ with $latest }}
-        <tr>
-          <th>Portfolio</th>
-          <td>{{ .portfolio_since_inception | default "n/a" }}</td>
-          <td>{{ .current_drawdown | default "n/a" }}</td>
-          <td>{{ .max_drawdown | default "n/a" }}</td>
-        </tr>
-        <tr>
-          <th>SP500TR</th>
-          <td>{{ .benchmark_since_inception | default "n/a" }}</td>
-          <td>{{ .benchmark_current_drawdown | default "n/a" }}</td>
-          <td>{{ .benchmark_max_drawdown | default "n/a" }}</td>
-        </tr>
-        <tr>
-          <th>Difference</th>
-          <td>{{ .excess_since_inception | default "n/a" }}</td>
-          <td>{{ .drawdown_difference | default "n/a" }}</td>
-          <td>{{ .max_drawdown_difference | default "n/a" }}</td>
-        </tr>
-        {{ end }}
-      </tbody>
-    </table>
-  </div>
+<section class="article-head performance-head">
+  <p class="eyebrow">Personal capital · Public record</p><h1>Performance</h1>
+  <p class="lede">The returns and the setbacks, in the same place.</p>
+  {{ with $latest }}<p class="as-of">{{ time.Format "January 2, 2006" .inception_date }} — {{ time.Format "January 2, 2006" .as_of_date }}</p>{{ end }}
+  <p class="measure-note">Returns account for deposits and withdrawals and are shown in Canadian dollars, before tax. This record began May 1, 2026. It is a developing record, not evidence of repeatable future returns.</p>
 </section>
-<section class="archive-section">
-  <h2>Monthly Automated Records</h2>
-  <div class="table-wrap">
-    <table class="archive-table">
-      <thead>
-        <tr>
-          <th>Month</th>
-          <th>Portfolio TWR CAD</th>
-          <th>PDF</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{ $latestPdf := "" }}
-        {{ if $records }}{{ $latestPdf = (index $records (sub (len $records) 1)).pdf_url }}{{ end }}
-        {{ range $records }}
-        <tr>
-          <td><a href="{{ .pdf_url }}">{{ .month_covered }}</a>{{ if eq .pdf_url $latestPdf }} <span class="new-marker">new</span>{{ end }}</td>
-          <td>{{ .portfolio_1m | default "n/a" }}</td>
-          <td><a href="{{ .pdf_url }}">Open</a></td>
-        </tr>
-        {{ end }}
-      </tbody>
-    </table>
-  </div>
+<section class="performance-overview" aria-label="Returns and declines">
+  {{ partial "performance-chart.html" . }}
+  <div class="summary-table-wrap"><table class="summary-table">
+    <caption class="sr-only">Portfolio and benchmark returns and declines since inception</caption>
+    <thead><tr><th scope="col">Measure</th><th scope="col">Portfolio</th><th scope="col">S&amp;P 500<span class="table-subtitle">dividends included</span></th></tr></thead>
+    {{ with $latest }}<tbody>
+      <tr><th scope="row">Return since {{ time.Format "Jan 2, 2006" .inception_date }}</th><td>{{ .portfolio_since_inception }}</td><td>{{ .benchmark_since_inception }}</td></tr>
+      <tr><th scope="row">Below previous peak</th><td>{{ .current_drawdown }}</td><td>{{ .benchmark_current_drawdown }}</td></tr>
+      <tr><th scope="row">Largest decline</th><td>{{ .max_drawdown }}</td><td>{{ .benchmark_max_drawdown }}</td></tr>
+    </tbody>{{ end }}
+  </table></div>
+  <details class="method-details"><summary>How to read these numbers</summary><p><strong>Return:</strong> time-weighted return (TWR). It separates investment performance from deposits and withdrawals.</p><p><strong>Below previous peak:</strong> the current decline from the highest point of the return record. <strong>Largest decline:</strong> the deepest peak-to-trough fall during this record, also called maximum drawdown. A more negative number means a larger decline.</p><p>The S&amp;P 500 Total Return Index includes reinvested dividends and is translated into CAD. It is a reference benchmark; it does not have the same holdings or risk as this portfolio. Public figures are before tax. After-tax results and time spent are not yet measured here.</p><a href="/about/">More about the method</a></details>
 </section>
+<section class="archive-section"><div class="section-head"><h2>Month by month</h2><span class="muted">Automated PDF records</span></div>
+  <div class="table-wrap"><table class="archive-table"><thead><tr><th scope="col">Month</th><th scope="col">Portfolio return · CAD</th><th scope="col">Report</th></tr></thead><tbody>
+  {{ $latestPdf := "" }}{{ if $records }}{{ $latestPdf = (index $records (sub (len $records) 1)).pdf_url }}{{ end }}
+  {{ range $records }}<tr><td>{{ .month_covered }}{{ if eq .pdf_url $latestPdf }} <span class="new-marker">Latest</span>{{ end }}</td><td>{{ .portfolio_1m | default "n/a" }}</td><td><a href="{{ .pdf_url }}" aria-label="Open {{ .month_covered }} PDF report">Open PDF <span aria-hidden="true">↗</span></a></td></tr>{{ end }}
+  </tbody></table></div>
+</section>
+<aside class="reporting-invitation"><p class="eyebrow">Portfolio reporting</p><h2>Want help understanding<br>your own numbers?</h2><a class="quiet-link" href="/portfolio-reporting/">Explore one-on-one reporting help <span aria-hidden="true">→</span></a></aside>
 {{ end }}

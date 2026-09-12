@@ -555,10 +555,10 @@ def main() -> None:
     try:
         period_keys = [args.period_key] if args.period_key else monthly_period_keys(conn)
         records = [write_record(conn, period_key, args.site) for period_key in period_keys]
-        record = records[-1]
-        data_path = args.site / "data" / "latest_performance.json"
-        data_path.parent.mkdir(parents=True, exist_ok=True)
-        data_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+        # Share the daily exporter so historical record builds cannot replace
+        # the current summary with an old month or drop the live chart.
+        from update_latest_performance import write_latest
+        write_latest(conn, args.site)
         print(f"wrote {len(records)} performance record(s)")
     finally:
         conn.close()

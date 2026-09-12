@@ -7,7 +7,7 @@ summary: "How to get in touch."
 
 ## Get in touch
 
-For portfolio-reporting projects, email me with your brokerage, approximate transaction count, reporting goal, and current problem.
+Tell me what you’re trying to understand or improve. A casual conversation is a good place to start.
 
 - Email: [carljamesross@gmail.com](mailto:carljamesross@gmail.com)
 - Text or voicemail: [778-212-8635](tel:+17782128635)
