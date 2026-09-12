@@ -848,3 +848,25 @@ h1, h2 { font-weight: 400; letter-spacing: -.035em; line-height: 1.12; }
   .article-head { padding-top: 32px; }
   .content h2 { font-size: 28px; }
 }
+
+/* Readable supporting text on phones and larger screens. */
+body { font-size: 18px; }
+.nav, .quiet-link, .small-note, .as-of, .eyebrow,
+.home-numbers span, .chart-heading > span, .chart-legend, .chart-dates,
+.performance-chart figcaption, .summary-table th, .summary-table thead th,
+.table-subtitle, .archive-table, .archive-table th,
+.archive-section .section-head > span, .site-disclaimer { font-size: 16px; }
+.eyebrow, .archive-table th { text-transform: none; letter-spacing: .02em; }
+.content, .measure-note, .method-details, .home-question { font-size: 18px; }
+.new-marker { font-size: 14px; }
+@media (max-width: 600px) {
+  .nav { gap: 0 12px; }
+  .home-numbers { grid-template-columns: 1fr; gap: 20px; }
+  .home-numbers div { grid-template-columns: 1fr auto; align-items: baseline; gap: 16px; }
+  .home-numbers strong { font-size: 32px; }
+  .chart-heading { flex-wrap: wrap; }
+  .chart-tick { font-size: 30px; }
+  .summary-table th:first-child { width: 36%; }
+  .summary-table td { font-size: 25px; }
+  .archive-table th { font-size: 16px; }
+}
