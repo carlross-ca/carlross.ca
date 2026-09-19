@@ -1,7 +1,7 @@
 {{ with site.Data.latest_performance }}
 {{ with .chart }}
 <figure class="performance-chart">
-  <div class="chart-heading"><h2>The path so far</h2><span class="muted">Growth from 100</span></div>
+  <div class="chart-heading"><h2>The path so far</h2></div>
   <div class="chart-legend"><span><i class="line-key portfolio-key"></i>Portfolio</span><span><i class="line-key benchmark-key"></i>S&amp;P 500, dividends included</span></div>
   <svg viewBox="0 0 640 280" role="img" aria-label="Portfolio and S&amp;P 500 performance from {{ .start }} to {{ .end }}. Both begin at 100 before the first day's return.">
     {{ range .ticks }}<line x1="60" x2="620" y1="{{ .y }}" y2="{{ .y }}" class="chart-grid"/><text x="46" y="{{ .y }}" dy=".35em" text-anchor="end" class="chart-tick">{{ .value }}</text>{{ end }}
