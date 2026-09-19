@@ -2,9 +2,9 @@
 {{ $records := site.Data.performance_records }}
 {{ $latest := site.Data.latest_performance }}
 <section class="article-head performance-head">
-  <p class="eyebrow">Personal capital · Public record</p><h1>Performance</h1>
+  <h1>Performance</h1>
   {{ with $latest }}<p class="as-of">{{ time.Format "January 2, 2006" .inception_date }} — {{ time.Format "January 2, 2006" .as_of_date }}</p>{{ end }}
-  <p class="measure-note">Returns account for deposits and withdrawals and are shown in Canadian dollars, before tax. This record began May 1, 2026. It is a developing record, not evidence of repeatable future returns.</p>
+  <p class="measure-note">Returns account for deposits and withdrawals and are shown in Canadian dollars, before tax. This record began May 1, 2026.</p>
 </section>
 <section class="performance-overview" aria-label="Returns and declines">
   {{ partial "performance-chart.html" . }}
@@ -25,5 +25,4 @@
   {{ range $records }}<tr><td>{{ .month_covered }}{{ if eq .pdf_url $latestPdf }} <span class="new-marker">Latest</span>{{ end }}</td><td>{{ .portfolio_1m | default "n/a" }}</td><td><a href="{{ .pdf_url }}" aria-label="Open {{ .month_covered }} PDF report">Open PDF <span aria-hidden="true">↗</span></a></td></tr>{{ end }}
   </tbody></table></div>
 </section>
-<aside class="reporting-invitation"><p class="eyebrow">Portfolio reporting</p><h2>Want help understanding<br>your own numbers?</h2><a class="quiet-link" href="/portfolio-reporting/">Explore one-on-one reporting help <span aria-hidden="true">→</span></a></aside>
 {{ end }}

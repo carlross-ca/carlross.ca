@@ -1,6 +1,6 @@
 {{ define "main" }}
 <section class="article-head">
-  <p class="eyebrow">{{ .Section | default "Archive" }}</p>
+  {{ if ne .Section "notes" }}<p class="eyebrow">{{ .Section | default "Archive" }}</p>{{ end }}
   <h1>{{ .Title }}</h1>
   {{ with .Content }}<div class="content intro">{{ . }}</div>{{ end }}
 </section>

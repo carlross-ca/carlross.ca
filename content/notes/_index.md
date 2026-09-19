@@ -1,6 +1,6 @@
 ---
 title: "Notes"
-summary: "Manual PM notes."
+summary: "Quarterly PM notes."
 ---
 
-Manual notes for judgment, mistakes, risk posture, and process changes.
+Quarterly notes for judgment, mistakes, risk posture, and process changes.

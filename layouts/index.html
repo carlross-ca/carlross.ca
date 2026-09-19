@@ -1,19 +1,18 @@
 {{ define "main" }}
 <section class="home-hero">
-  <p class="eyebrow">Personal capital · Public record</p>
   <h1 class="home-title">Has active trading<br class="desktop-break"> actually been worth it?</h1>
-  <p class="home-question">I keep a public record of my portfolio. The comparison benchmark is: S&amp;P 500, with dividends included.</p>
+  <p class="home-question">I keep a public record of my portfolio.</p>
   <div class="actions"><a class="button primary" href="/performance/">Explore the record <span aria-hidden="true">↗</span></a><a class="quiet-link" href="/about/">How I measure it</a></div>
-  <p class="small-note">Returns are before tax. Taxes and time spent are not yet measured.</p>
 </section>
 <section class="home-live" aria-label="Latest portfolio record">
   {{ with site.Data.latest_performance }}
-  <div class="section-head"><p class="eyebrow">Since {{ time.Format "January 2, 2006" .inception_date }}</p><span class="as-of">Through {{ time.Format "Jan 2, 2006" .as_of_date }}</span></div>
+  <p class="eyebrow">Since {{ time.Format "January 2, 2006" .inception_date }} <span class="as-of">through {{ time.Format "Jan 2, 2006" .as_of_date }}</span></p>
+  <p class="small-note">Return figures are before tax, in CAD.</p>
   <div class="home-numbers"><div><span>Portfolio return</span><strong>{{ .portfolio_since_inception }}</strong></div><div><span>S&amp;P 500 return</span><strong>{{ .benchmark_since_inception }}</strong></div><div><span>Largest portfolio decline</span><strong>{{ .max_drawdown }}</strong></div></div>
   {{ end }}
 </section>
 <section class="home-offer">
   <div class="home-offer-portrait"><img src="/images/carl-ross.webp" alt="Carl Ross" loading="lazy" width="540" height="600"></div>
-  <div class="home-offer-copy"><p class="eyebrow">One-on-one help</p><h2>Make sense of your<br>portfolio numbers.</h2><p>One-on-one help with returns, trading costs, and brokerage records.</p><a class="home-text-link" href="/portfolio-reporting/">Explore portfolio reporting <span aria-hidden="true">↗</span></a></div>
+  <div class="home-offer-copy"><h2>Make sense of your<br>portfolio numbers.</h2><p>One-on-one help with returns, trading costs, and brokerage records.</p><a class="home-text-link" href="/portfolio-reporting/">Explore portfolio reporting <span aria-hidden="true">↗</span></a></div>
 </section>
 {{ end }}
