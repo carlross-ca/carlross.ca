@@ -25,6 +25,9 @@ from export_performance_records import (
 )
 
 
+from report_calculations import usd_performance_between, core_ticker_attribution_between, drivers_between
+
+
 PAGE_W, PAGE_H = 612, 792
 INK = (0.08, 0.09, 0.10)
 MUTED = (0.37, 0.40, 0.42)
@@ -151,15 +154,15 @@ def attribution_table(pdf: Pdf, x: float, y: float, rows: list[dict], row_h: flo
     max_abs = max(values + [0.01])
     bar_x = x + widths[0] + widths[1] + 5
     bar_w = widths[2] - 10
-    mid = bar_x + bar_w * 0.36
+    mid = bar_x + bar_w * 0.5
     for r in rows:
         value = float(r.get("value") or 0)
         pdf.line(x, y, x + total_w, y)
         label = str(r["label"])
-        pdf.text(x + 5, y - 11, label, 8, INK)
-        pdf.text(x + widths[0] + 5, y - 11, r["display"], 8, INK)
+        pdf.text(x + 5, y - 13, label, 10, INK)
+        pdf.text(x + widths[0] + 5, y - 13, r["display"], 10, INK)
         pdf.line(mid, y - 12, mid, y - 3, LINE)
-        scaled = min(abs(value) / max_abs, 1.0) * (bar_w * 0.56)
+        scaled = min(abs(value) / max_abs, 1.0) * (bar_w * 0.46)
         fill = GOOD if value >= 0 else BAD
         bx = mid if value >= 0 else mid - scaled
         pdf.rect(bx, y - 11, scaled, 7, stroke=fill, fill=fill)
@@ -223,90 +226,8 @@ def usd_performance(conn: sqlite3.Connection, period_key: str) -> dict | None:
 
 
 def core_ticker_attribution(conn: sqlite3.Connection, period_key: str) -> list[dict]:
-    found = rows(
-        conn,
-        """
-        WITH p AS (
-            SELECT *
-            FROM v_report_performance_usd
-            WHERE period_key=?
-        ),
-        core_symbols(symbol, display_order) AS (
-            VALUES ('SGOV', 1), ('SPY', 2), ('GLD', 3), ('IBIT', 4)
-        ),
-        start_pos AS (
-            SELECT cs.symbol, COALESCE(SUM(ps.quantity * ps.market_price), 0) AS amount_usd
-            FROM core_symbols cs
-            CROSS JOIN p
-            LEFT JOIN fact_pos_snap ps
-              ON ps.snapshot_date = (
-                  SELECT MAX(snapshot_date)
-                  FROM fact_pos_snap
-                  WHERE snapshot_date < p.first_date
-              )
-             AND ps.symbol = cs.symbol
-             AND COALESCE(ps.option_symbol, '') = ''
-             AND ps.position_side = 'LONG'
-            GROUP BY cs.symbol
-        ),
-        end_pos AS (
-            SELECT cs.symbol, COALESCE(SUM(ps.quantity * ps.market_price), 0) AS amount_usd
-            FROM core_symbols cs
-            CROSS JOIN p
-            LEFT JOIN fact_pos_snap ps
-              ON ps.snapshot_date = p.last_date
-             AND ps.symbol = cs.symbol
-             AND COALESCE(ps.option_symbol, '') = ''
-             AND ps.position_side = 'LONG'
-            GROUP BY cs.symbol
-        ),
-        trades AS (
-            SELECT cs.symbol, COALESCE(SUM(-t.quantity * t.price * t.multiplier), 0) AS amount_usd
-            FROM core_symbols cs
-            CROSS JOIN p
-            LEFT JOIN v_core_trades t
-              ON t.trade_date >= p.first_date
-             AND t.trade_date <= p.last_date
-             AND t.symbol = cs.symbol
-             AND COALESCE(t.option_symbol, '') = ''
-             AND t.txn_type IN ('BUY','SELL')
-            GROUP BY cs.symbol
-        ),
-        dividends AS (
-            SELECT cs.symbol, COALESCE(SUM(t.net_amount_usd), 0) AS amount_usd
-            FROM core_symbols cs
-            CROSS JOIN p
-            LEFT JOIN v_core_trades t
-              ON t.trade_date >= p.first_date
-             AND t.trade_date <= p.last_date
-             AND t.symbol = cs.symbol
-             AND t.txn_type = 'DIV'
-            GROUP BY cs.symbol
-        )
-        SELECT
-            cs.symbol,
-            ROUND(COALESCE(e.amount_usd, 0) - COALESCE(s.amount_usd, 0)
-              + COALESCE(t.amount_usd, 0) + COALESCE(d.amount_usd, 0), 2) AS amount_usd,
-            ROUND((COALESCE(e.amount_usd, 0) - COALESCE(s.amount_usd, 0)
-              + COALESCE(t.amount_usd, 0) + COALESCE(d.amount_usd, 0)) / NULLIF(p.nav_start_usd, 0), 6) AS pct_start_nav
-        FROM core_symbols cs
-        CROSS JOIN p
-        LEFT JOIN start_pos s ON s.symbol = cs.symbol
-        LEFT JOIN end_pos e ON e.symbol = cs.symbol
-        LEFT JOIN trades t ON t.symbol = cs.symbol
-        LEFT JOIN dividends d ON d.symbol = cs.symbol
-        ORDER BY cs.display_order
-        """,
-        (period_key,),
-    )
-    return [
-        {
-            "label": "Core " + str(r["symbol"]),
-            "value": float(r["pct_start_nav"] or 0),
-            "display": signed_pct(float(r["pct_start_nav"] or 0)),
-        }
-        for r in found
-    ]
+    p = conn.execute("SELECT * FROM v_report_performance_usd WHERE period_key=?", (period_key,)).fetchone()
+    return [] if p is None else core_ticker_attribution_between(conn, p["first_date"], p["last_date"], p["nav_start_usd"])
 
 
 def driver_chart(pdf: Pdf, x: float, y: float, w: float, h: float, drivers: list[dict]) -> None:
@@ -398,170 +319,13 @@ def score_from_path(conn: sqlite3.Connection, period_key: str, label: str, path:
     }
 
 
-def usd_performance_between(conn: sqlite3.Connection, start_date: str, end_date: str) -> dict | None:
-    found = conn.execute(
-        """
-        WITH daily AS (
-            SELECT
-                d.*,
-                COALESCE(d.external_flow_cad / NULLIF(d.usdcad, 0), 0) AS external_flow_usd,
-                (
-                    SELECT SUM(n0.nav_usd)
-                    FROM v_core_nav_daily n0
-                    WHERE n0.date = (
-                        SELECT MAX(n1.date)
-                        FROM v_core_nav_daily n1
-                        WHERE n1.date < d.date
-                    )
-                ) AS prior_nav_usd
-            FROM fact_performance_paths_daily d
-            WHERE d.period_key='since_inception'
-              AND d.date BETWEEN ? AND ?
-        )
-        SELECT
-            EXP(SUM(LN(NULLIF(1.0 + CASE
-                WHEN prior_nav_usd IS NULL OR prior_nav_usd = 0 THEN 0
-                ELSE (nav_usd - prior_nav_usd - external_flow_usd) / prior_nav_usd
-            END, 0)))) - 1.0 AS portfolio_return_usd,
-            (SELECT prior_nav_usd FROM daily ORDER BY date ASC LIMIT 1) AS nav_start_usd,
-            (SELECT nav_usd FROM daily ORDER BY date DESC LIMIT 1) AS nav_end_usd,
-            SUM(external_flow_usd) AS external_flows_usd,
-            COALESCE(
-              (SELECT value FROM fact_market_data m
-                WHERE m.ticker = 'SP500TR'
-                  AND m.date < (SELECT MIN(date) FROM daily)
-                ORDER BY m.date DESC LIMIT 1),
-              (SELECT value FROM fact_market_data m
-                WHERE m.ticker = 'SP500TR'
-                  AND m.date = (SELECT MIN(date) FROM daily))
-            ) AS spx_start,
-            (SELECT value FROM fact_market_data m
-              WHERE m.ticker = 'SP500TR'
-                AND m.date = (SELECT MAX(date) FROM daily)) AS spx_end
-        FROM daily
-        """,
-        (start_date, end_date),
-    ).fetchone()
-    if found is None or found["portfolio_return_usd"] is None:
-        return None
-    benchmark = float(found["spx_end"] or 0) / float(found["spx_start"] or 1) - 1.0
-    nav_start = float(found["nav_start_usd"] or 0)
-    nav_end = float(found["nav_end_usd"] or 0)
-    flows = float(found["external_flows_usd"] or 0)
-    return {
-        "portfolio": float(found["portfolio_return_usd"] or 0),
-        "benchmark": benchmark,
-        "excess": float(found["portfolio_return_usd"] or 0) - benchmark,
-        "nav_start_usd": nav_start,
-        "net_pnl_usd": nav_end - nav_start - flows,
-    }
 
 
-def core_ticker_attribution_between(conn: sqlite3.Connection, start_date: str, end_date: str, nav_start_usd: float) -> list[dict]:
-    found = rows(
-        conn,
-        """
-        WITH core_symbols(symbol, display_order) AS (
-            VALUES ('SGOV', 1), ('SPY', 2), ('GLD', 3), ('IBIT', 4)
-        ),
-        start_pos AS (
-            SELECT cs.symbol, COALESCE(SUM(ps.quantity * ps.market_price), 0) AS amount_usd
-            FROM core_symbols cs
-            LEFT JOIN fact_pos_snap ps
-              ON ps.snapshot_date = (
-                  SELECT MAX(snapshot_date)
-                  FROM fact_pos_snap
-                  WHERE snapshot_date < ?
-              )
-             AND ps.symbol = cs.symbol
-             AND COALESCE(ps.option_symbol, '') = ''
-             AND ps.position_side = 'LONG'
-            GROUP BY cs.symbol
-        ),
-        end_pos AS (
-            SELECT cs.symbol, COALESCE(SUM(ps.quantity * ps.market_price), 0) AS amount_usd
-            FROM core_symbols cs
-            LEFT JOIN fact_pos_snap ps
-              ON ps.snapshot_date = ?
-             AND ps.symbol = cs.symbol
-             AND COALESCE(ps.option_symbol, '') = ''
-             AND ps.position_side = 'LONG'
-            GROUP BY cs.symbol
-        ),
-        trades AS (
-            SELECT cs.symbol, COALESCE(SUM(-t.quantity * t.price * t.multiplier), 0) AS amount_usd
-            FROM core_symbols cs
-            LEFT JOIN v_core_trades t
-              ON t.trade_date >= ?
-             AND t.trade_date <= ?
-             AND t.symbol = cs.symbol
-             AND COALESCE(t.option_symbol, '') = ''
-             AND t.txn_type IN ('BUY','SELL')
-            GROUP BY cs.symbol
-        ),
-        dividends AS (
-            SELECT cs.symbol, COALESCE(SUM(t.net_amount_usd), 0) AS amount_usd
-            FROM core_symbols cs
-            LEFT JOIN v_core_trades t
-              ON t.trade_date >= ?
-             AND t.trade_date <= ?
-             AND t.symbol = cs.symbol
-             AND t.txn_type = 'DIV'
-            GROUP BY cs.symbol
-        )
-        SELECT
-            cs.symbol,
-            COALESCE(e.amount_usd, 0) - COALESCE(s.amount_usd, 0)
-              + COALESCE(t.amount_usd, 0) + COALESCE(d.amount_usd, 0) AS amount_usd
-        FROM core_symbols cs
-        LEFT JOIN start_pos s ON s.symbol = cs.symbol
-        LEFT JOIN end_pos e ON e.symbol = cs.symbol
-        LEFT JOIN trades t ON t.symbol = cs.symbol
-        LEFT JOIN dividends d ON d.symbol = cs.symbol
-        ORDER BY cs.display_order
-        """,
-        (start_date, end_date, start_date, end_date, start_date, end_date),
-    )
-    return [
-        {
-            "label": "Core " + str(r["symbol"]),
-            "value": 0 if nav_start_usd == 0 else float(r["amount_usd"] or 0) / nav_start_usd,
-            "display": signed_pct(0 if nav_start_usd == 0 else float(r["amount_usd"] or 0) / nav_start_usd),
-            "amount_usd": float(r["amount_usd"] or 0),
-        }
-        for r in found
-    ]
 
 
-def drivers_between(conn: sqlite3.Connection, start_date: str, end_date: str, perf: dict) -> list[dict]:
-    nav_start = float(perf["nav_start_usd"] or 0)
-    ticker_lines = core_ticker_attribution_between(conn, start_date, end_date, nav_start)
-    core_usd = sum(float(d["amount_usd"] or 0) for d in ticker_lines)
-    costs = conn.execute(
-        """
-        SELECT
-            -COALESCE(SUM(total_cost_usd), 0) AS amount_usd
-        FROM v_report_costs_daily_usd
-        WHERE date >= ?
-          AND date <= ?
-        """,
-        (start_date, end_date),
-    ).fetchone()
-    costs_usd = float(costs["amount_usd"] or 0)
-    satellite_usd = float(perf["net_pnl_usd"] or 0) - core_usd - costs_usd
-    tail = [
-        ("Satellite trades", satellite_usd),
-        ("Costs", costs_usd),
-        ("Residual", 0.0),
-    ]
-    return ticker_lines + [
-        {
-            "label": label,
-            "value": 0 if nav_start == 0 else amount / nav_start,
-            "display": signed_pct(0 if nav_start == 0 else amount / nav_start),
-        }
-        for label, amount in tail
-    ]
+
+
+
 
 
 def calendar_lookback_start(end_date: str, months: int) -> str:
@@ -626,13 +390,16 @@ def asof_payload(conn: sqlite3.Connection, label: str, path: list[sqlite3.Row]) 
     payload["risk_months"] = risk_months_between(conn, payload["start_date"], payload["end_date"])
     days = sorted({int(r["total_days"]) for r in payload["risk_rows"] if r.get("total_days") is not None})
     payload["risk_total_days"] = days[0] if len(days) == 1 else None
-    if label == "Since Inception":
-        current_dd, max_dd = drawdown_asof(conn, INCEPTION_DATE, payload["end_date"])
-        benchmark_current_dd, benchmark_max_dd = benchmark_drawdown_asof(conn, INCEPTION_DATE, payload["end_date"])
-        payload["drawdowns"] = [
-            ["Portfolio", pct(current_dd), pct(max_dd)],
-            ["S&P 500 TR", pct(benchmark_current_dd), pct(benchmark_max_dd)],
-        ]
+    payload["drawdowns"] = []
+    for key, name in [("portfolio", "Portfolio"), ("benchmark", "S&P 500 TR")]:
+        peak = 100.0
+        dds = []
+        for point in payload["path"]:
+            peak = max(peak, point[key])
+            dds.append(point[key] / peak - 1)
+        payload["drawdowns"].append([name, pct(dds[-1]), pct(min(dds))])
+    cost = conn.execute("SELECT SUM(execution_fees_usd), SUM(margin_interest_usd), SUM(activity_fees_usd), SUM(hidden_fx_usd) FROM v_report_costs_daily_usd WHERE date BETWEEN ? AND ?", (payload["start_date"], payload["end_date"])).fetchone()
+    payload["costs"] = [float(v or 0) / usd["nav_start_usd"] if usd and usd["nav_start_usd"] else 0 for v in cost]
     return payload
 
 
@@ -708,77 +475,64 @@ def pdf_report_periods(conn: sqlite3.Connection, month_key: str) -> list[dict]:
         asof_payload(conn, "Trailing 12 Months", asof_path(conn, end_date, calendar_lookback_start(end_date, 12))),
         asof_payload(conn, "Since Inception", asof_path(conn, end_date)),
     ]
+    for i, p in enumerate(requested):
+        if p is not None:
+            expected = month["first_date"] if i == 0 else calendar_lookback_start(end_date, (3 if i == 1 else 12)) if i < 3 else p["start_date"]
+            inception = conn.execute("SELECT MIN(date) FROM fact_performance_paths_daily WHERE period_key='since_inception'").fetchone()[0]
+            p["full_window"] = expected >= inception
     return [p for p in requested if p is not None]
 
 
 def write_pdf(path: Path, title: str, periods: list[dict]) -> None:
+    """Two readable pages per window: performance, then risk and methodology."""
     pdf = Pdf()
-    pdf.page()
-    pdf.centered_text(430, title, 26, INK, True)
-    pdf.centered_text(398, "USD investment return and CAD reporting return", 12, MUTED)
-    pdf.centered_text(374, "carlross.ca", 11, MUTED)
-
-    for p in periods:
+    total_pages = len(periods) * 2
+    def header(p, subtitle, page):
         pdf.page()
-        pdf.centered_text(750, p["label"], 18, INK, True)
-        pdf.centered_text(728, f"Beg Date: {p['start_date']}    End Date: {p['end_date']}", 10, MUTED)
-        pdf.line(42, 718, 570, 718)
-
-        section_title(pdf, 696, "Return Summary")
-        table(
-            pdf,
-            42,
-            674,
-            [160, 122, 122, 124],
-            ["Measure", "Portfolio", "S&P 500 TR", "Difference"],
-            [
-                ["USD investment TWR", p.get("usd_portfolio", "n/a"), p.get("usd_benchmark", "n/a"), p.get("usd_excess", "n/a")],
-                ["CAD reporting TWR", p["portfolio"], p["benchmark"], p["excess"]],
-            ],
-            17,
-            10,
-        )
-        pdf.text(
-            42,
-            610,
-            f"USD to CAD conversion effect on TWR: Portfolio {p.get('portfolio_fx', 'n/a')}; S&P 500 TR {p.get('benchmark_fx', 'n/a')}.",
-            10,
-            INK,
-        )
-
-        section_title(pdf, 586, "CAD Performance Path", "Growth of $1")
-        path_chart(pdf, 42, 562, 528, 120, p)
-
-        section_title(pdf, 414, "USD Attribution", "Investment contribution before CAD translation")
-        attribution_table(pdf, 42, 388, p.get("drivers", [])[:8], 14)
-
-        risk_title_y = 250 if p.get("drawdowns") else 242
-        risk_table_y = 222 if p.get("drawdowns") else 214
-        section_title(pdf, risk_title_y, "Risk Dashboard", "Custom operating limits; breach days show time outside target range")
-        risk_row_h = 12 if p.get("drawdowns") else 13
-        table(
-            pdf,
-            42,
-            risk_table_y,
-            [160, 56, 56, 172, 84],
-            ["Metric", "Avg", "Median", "Limit", "Breaches"],
-            [[r["metric"], r["avg"], r["median"], r["limit"], r["breach_days"]] for r in p.get("risk_rows", [])],
-            risk_row_h,
-            8,
-        )
-        if p.get("drawdowns"):
-            section_title(pdf, 72, "Since-Inception Drawdown")
-            table(
-                pdf,
-                132,
-                54,
-                [132, 104, 104],
-                ["Series", "Current", "Max"],
-                p["drawdowns"],
-                12,
-                8,
-            )
-        pdf.centered_text(8 if p.get("drawdowns") else 36, f"carlross.ca | {title}", 9, MUTED)
+        pdf.rect(0, 0, PAGE_W, PAGE_H, stroke=PAPER, fill=PAPER)
+        pdf.text(42, 752, "CARL ROSS / PERFORMANCE RECORD", 10, ACCENT, True)
+        pdf.text(42, 718, p["label"], 25, INK, True)
+        if not p.get("full_window", True):
+            pdf.text(42, 666, "PARTIAL WINDOW / available history only", 10, ACCENT, True)
+        pdf.text(42, 695, f"{p['start_date']} to {p['end_date']}  |  {subtitle}", 11, MUTED)
+        pdf.line(42, 680, 570, 680)
+        pdf.text(42, 28, title, 9, MUTED)
+        pdf.text(511, 28, f"{page} / {total_pages}", 9, MUTED)
+    for i, p in enumerate(periods):
+        header(p, "Pre-tax / daily closing values", i*2+1)
+        pdf.text(42, 651, "Return summary", 17, INK, True)
+        table(pdf, 42, 630, [168,120,120,120], ["Measure","Portfolio","S&P 500 TR","Difference"], [
+            ["USD investment TWR",p.get("usd_portfolio","n/a"),p.get("usd_benchmark","n/a"),p.get("usd_excess","n/a")],
+            ["CAD reporting TWR",p["portfolio"],p["benchmark"],p["excess"]]], 28, 11)
+        pdf.text(42, 523, "CAD includes currency translation. Difference is in percentage points.", 10, MUTED)
+        pdf.text(42, 490, "Performance path", 17, INK, True)
+        pdf.text(42, 472, "CAD / change from opening value", 10, MUTED)
+        path_chart(pdf, 42, 453, 528, 177, p)
+        pdf.text(42, 248, "USD attribution", 17, INK, True)
+        pdf.text(42, 230, "P&L / beginning NAV. Sums to simple return, not TWR.", 10, MUTED)
+        attribution_table(pdf, 42, 212, p.get("drivers", []), 21)
+        header(p, "Risk, costs and calculation basis", i*2+2)
+        pdf.text(42, 650, "Risk discipline", 17, INK, True)
+        pdf.text(42, 630, "Custom operating limits / breaches per observed day", 10, MUTED)
+        table(pdf,42,613,[170,60,60,160,78],["Metric","Avg","Median","Limit","Days"],
+              [[r["metric"],r["avg"],r["median"],r["limit"],f"{r['breach_days']} / {r['total_days']}"] for r in p.get("risk_rows",[])],23,10)
+        pdf.text(42, 378, "Period drawdown", 17, INK, True)
+        table(pdf,42,359,[240,144,144],["CAD series","End","Maximum"],p.get("drawdowns",[]),24,11)
+        pdf.text(42, 260, "Costs / % beginning USD NAV", 17, INK, True)
+        labels=["Trading fees","Interest, net","Fees / rebates","Estimated FX spread"]
+        for j,(label,value) in enumerate(zip(labels,p.get("costs",[]))):
+            x=42+(j%2)*264; y=236-(j//2)*42
+            pdf.text(x,y,label,10,MUTED)
+            pdf.text(x,y-18,f"{value:.3%}",13,INK,True)
+        notes=[
+            "Returns compound daily after external flows. Costs are already included in returns.",
+            "Core SPY/RSP combines both ETFs. Satellite / other is the balancing P&L after core",
+            "and costs, including unclassified effects; it is not independently measured trade P&L.",
+            "FX spread is estimated against the daily rate and can include intraday rate movement.",
+            "Drawdowns use this window's peak, including opening value. Missing risk days are excluded.",
+            "Windows are limited to available history; coverage dates above are authoritative.",
+        ]
+        for j,note in enumerate(notes): pdf.text(42,143-j*14,note,10,MUTED)
     pdf.save(path)
 
 
@@ -858,8 +612,8 @@ def write_one(conn: sqlite3.Connection, root: Path, period_key: str) -> dict:
         "portfolio_1m": periods[0]["portfolio"] if periods else pct(month["portfolio"]),
         "benchmark_1m": periods[0]["benchmark"] if periods else pct(month["benchmark"]),
         "excess_1m": periods[0]["excess"] if periods else "n/a",
-        "portfolio_3m": next((p["portfolio"] for p in periods if p["label"] == "Trailing 3 Months"), "n/a"),
-        "portfolio_12m": next((p["portfolio"] for p in periods if p["label"] == "Trailing 12 Months"), "n/a"),
+        "portfolio_3m": next((p["portfolio"] for p in periods if p["label"] == "Trailing 3 Months" and p.get("full_window", True)), "n/a"),
+        "portfolio_12m": next((p["portfolio"] for p in periods if p["label"] == "Trailing 12 Months" and p.get("full_window", True)), "n/a"),
         "portfolio_since_inception": next((p["portfolio"] for p in periods if p["label"] == "Since Inception"), "n/a"),
         "benchmark_since_inception": next((p["benchmark"] for p in periods if p["label"] == "Since Inception"), "n/a"),
         "current_drawdown": pct(current_dd),
