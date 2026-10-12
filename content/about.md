@@ -9,7 +9,7 @@ This site is my public portfolio record: active investing measured against the S
 
 The main research question is: has active trading been worth it after costs, taxes, risk and attention—versus the realistic passive alternative of simply holding the S&P 500?
 
-Complete transaction history makes the process and results verifiable. Current public performance is pre-tax and measured against the S&P 500 Total Return Index in CAD. After-tax measurement remains part of the research.
+I store complete transaction history and additional market data to make the results verifiable. Current public performance is pre-tax and measured against the S&P 500 Total Return Index in CAD.
 
 The portfolio is run from British Columbia, Canada, with my own capital. I do not manage client assets, accept outside capital, or provide investment advice through this site.
 
@@ -19,39 +19,38 @@ The public record shows:
 
 - Portfolio time-weighted return
 - S&P 500 Total Return benchmark in CAD
-- Difference versus benchmark
 - Drawdown
 - Return drivers as percent of beginning NAV
 - A custom daily risk monitoring framework
 
-Returns are CAD-based and time-weighted. External cash flows are separated from performance so the return record reflects portfolio results.
+Return figures have been converted to $CAD and they are time-weighted, which means that any of my deposits and withdrawals are properly excluded from the headline return figures.
 
-Performance records are monthly and automated. Each monthly record includes four reporting periods: trailing 1 month, 3 month, 12 month, and since-inception. Quarter-end and year-end performance are therefore embedded in the monthly record. Each period has three sections: Performance Path, NAV Return Drivers, and Risk Breach Days.
+Performance records are monthly and automated. Each monthly record includes four reporting periods: trailing 1 month, 3 month, 12 month, and since-inception. Quarter-end and year-end performance are therefore embedded in the monthly record.
+
+The automated monthly reports and my quarterly notes published on the website provide the transparency and context needed for you to have accurate interpretation of investment results.
 
 ## Method
 
-The portfolio uses ETFs, held in USD, as the base and options selectively when the risk/reward is worth documenting.
+The portfolio uses ETFs, held in USD, as a base allocation that is mostly passive. Option contracts are always used selectively, but they may also be used persistently.
 
-My current heuristic baseline is:
+My current heuristic for passive allocation is:
 
-- 40% SPY
+- 40% SPY or RSP
 - 20% GLD
 - 20% IBIT
 - 20% SGOV
 
-This baseline is a reference mix. Tactical allocations can move the portfolio away from this mix when risk/reward justifies it.
-
-The goal is to make the process legible. The automated record keeps me honest because the same format is used every month. Manual PM notes on the website, and weekly posts on social media, are separate and optional.
+Tactical allocations (active trading) will move the portfolio away from this allocation mix if I think the risk/reward is worth it. This could be some or all of the time. One of the best strengths for an independent retail trader is the freedom/flexibility that comes with discretionary trading. But this is only a strength, if it is combined with a reasonable process and consistent judgement on how to execute that process.
 
 ## Risk
 
-Options can create losses quickly, especially when margin is involved. Short-option and volatility-income trades can look steady for long stretches and then become uncomfortable very fast.
+Options can create losses quickly, especially when margin is involved. Short-option and volatility-income trades can look steady for long stretches and then destroy you very fast.
 
-AUM matters when reading the return record. A smaller portfolio can naturally accept more concentration, margin, and position-level risk than a larger portfolio, which can elevate both returns and drawdowns.
+AUM is extremely important context when interpreting a return record. A smaller portfolio can naturally accept more concentration, margin, and position-level risk than a larger portfolio, which can elevate both returns and drawdowns.
 
-## Risk Monitoring
+## Risk Controls
 
-Risk breach days are my own control metric, not an industry-standard performance figure. The framework checks daily portfolio exposures against practical limits for delta, gamma, vega, theta, margin cushion, open contracts, recent trading activity, and VIX.
+'Risk breach days' are my own control metric that I rely on as part of my process. Live portfolio exposures are checked against practical limits for delta, gamma, vega, theta, margin cushion, open contracts, transaction count, and VIX.
 
 The metrics are:
 
@@ -64,6 +63,6 @@ The metrics are:
 - 30d Trade Count: buy/sell transaction count from the trailing 30 calendar days.
 - VIX: SP500 Vol Index (30-day implied)
 
-The current target is fewer than 10 breach days per month. That target is intentionally provisional: more monthly data should make the limits more precise and stricter over time. Risk monitoring and risk management will also need to strengthen as AUM grows.
+The current target is fewer than 10 breach days per month. That target is provisional: more data collected over time will help to refine the limits I set as to what constitutes a 'Risk breach day'. Risk monitoring and risk management must also improve as AUM grows.
 
 This is not investment advice, an offer to sell securities, or a solicitation to manage money. It is a public notebook about my own portfolio.
