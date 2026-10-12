@@ -9,7 +9,7 @@ This site is my public portfolio record: active investing measured against the S
 
 The main research question is: has active trading been worth it after costs, taxes, risk and attention—versus the realistic passive alternative of simply holding the S&P 500?
 
-I store complete transaction history and additional market data to make the results verifiable. Current public performance is pre-tax and measured against the S&P 500 Total Return Index in CAD.
+I store complete transaction history and additional market data to make the results verifiable. Current public performance is **pre-tax** and measured against the S&P 500 Total Return Index in CAD.
 
 The portfolio is run from British Columbia, Canada, with my own capital. I do not manage client assets, accept outside capital, or provide investment advice through this site.
 
