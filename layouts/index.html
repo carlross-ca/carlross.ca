@@ -1,11 +1,9 @@
 {{ define "main" }}
 <section class="home-hero">
-  <h1 class="home-title">Has active trading<br class="desktop-break"> actually been worth it?</h1>
-  <p class="home-question">I keep a public record of my portfolio.</p>
-  <div class="actions"><a class="button primary" href="/performance/">Explore the record <span aria-hidden="true">↗</span></a><a class="quiet-link" href="/about/">How I measure it</a></div>
-</section>
-<section class="home-offer">
-  <div class="home-offer-portrait"><img src="/images/carl-ross.webp" alt="Carl Ross" loading="lazy" width="540" height="600"></div>
-  <div class="home-offer-copy"><h2>Make sense of your<br>portfolio numbers.</h2><a class="home-text-link" href="/portfolio-reporting/">Explore portfolio reporting <span aria-hidden="true">↗</span></a></div>
+  <div class="home-hero-copy">
+    <h1 class="home-title">I keep a public record of my portfolio.</h1>
+    <div class="actions"><a class="button primary" href="/performance/">Explore the record <span aria-hidden="true">↗</span></a><a class="quiet-link" href="/about/">How I measure it</a></div>
+  </div>
+  <div class="home-hero-portrait"><img src="/images/carl-ross.webp" alt="Carl Ross" fetchpriority="high" width="540" height="600"></div>
 </section>
 {{ end }}
