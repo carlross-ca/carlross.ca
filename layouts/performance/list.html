@@ -1,5 +1,5 @@
 {{ define "main" }}
-{{ $records := site.Data.performance_records }}
+{{ $records := sort site.Data.performance_records "as_of_date" "desc" }}
 {{ $latest := site.Data.latest_performance }}
 <section class="article-head performance-head">
   <h1>Performance</h1>
@@ -21,7 +21,7 @@
 </section>
 <section class="archive-section"><div class="section-head"><h2>Month by month</h2><span class="muted">Automated PDF records</span></div>
   <div class="table-wrap"><table class="archive-table"><thead><tr><th scope="col">Month</th><th scope="col">Portfolio return · CAD</th><th scope="col">Report</th></tr></thead><tbody>
-  {{ $latestPdf := "" }}{{ if $records }}{{ $latestPdf = (index $records (sub (len $records) 1)).pdf_url }}{{ end }}
+  {{ $latestPdf := "" }}{{ if $records }}{{ $latestPdf = (index $records 0).pdf_url }}{{ end }}
   {{ range $records }}<tr><td>{{ .month_covered }}{{ if eq .pdf_url $latestPdf }} <span class="new-marker">Latest</span>{{ end }}</td><td>{{ .portfolio_1m | default "n/a" }}</td><td><a href="{{ .pdf_url }}" aria-label="Open {{ .month_covered }} PDF report">Open PDF <span aria-hidden="true">↗</span></a></td></tr>{{ end }}
   </tbody></table></div>
 </section>
